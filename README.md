@@ -1,6 +1,6 @@
 # Save the King — Match Rescue
 
-A playable match-3 rescue game with five distinct rescue scenes and a bit more challenge.
+A playable match-3 rescue game with five distinct rescue scenes and a harder difficulty curve.
 
 ## Play
 
@@ -8,16 +8,17 @@ https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.h
 
 ## Difficulty update
 
-- Added move limits to every level.
-- Raised rescue targets.
+- Higher rescue targets on every level.
+- Lower rescue reward per match.
 - Hazards rise/spread faster.
-- Bad swaps now cost danger instead of giving a free tug.
-- Rescue gains are smaller, so goal-tile matches and bigger combos matter more.
+- Bad swaps now cost danger instead of helping.
+- Levels 3–5 no longer start with obvious goal matches.
+- Added move limits shown in-game.
 
 ## Levels
 
-1. **Lava Drop** — 20 moves — match 🪢 ROPE tiles to pull the king up.
-2. **Flooded Cellar** — 22 moves — match 🔑 KEY tiles to open the drain.
-3. **Kitchen Fire** — 24 moves — match 💧 WATER tiles to put out the fire.
-4. **Frozen Throne** — 25 moves — match 🔥 FIRE tiles to melt the ice.
-5. **Dragon Bridge** — 27 moves — match 🔨 HAMMER tiles to rebuild the bridge.
+1. **Lava Drop** — 18 moves, match 🪢 ROPE tiles.
+2. **Flooded Cellar** — 20 moves, match 🔑 KEY tiles.
+3. **Kitchen Fire** — 21 moves, match 💧 WATER tiles.
+4. **Frozen Throne** — 22 moves, match 🔥 FIRE tiles.
+5. **Dragon Bridge** — 24 moves, match 🔨 HAMMER tiles.
