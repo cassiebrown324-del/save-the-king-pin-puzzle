@@ -53,6 +53,7 @@ const levels=[
   {name:'Dragon Bridge', scene:'dragon', target:430, moves:22, fall:6.7, hazard:5.5, special:4, shape:'BROKEN BRIDGE', holes:['0,0','1,0','5,0','6,0','0,1','6,1','3,2','3,3','3,4','0,5','6,5','0,6','1,6','5,6','6,6'], objective:'Match 🔨 HAMMER tiles to build the bridge', intro:'Final Level: 22 moves. Broken-bridge board: center gaps split the board. Build combos with 🔨 HAMMER tiles.'}
 ];
 let grid=[], selected=null, swapping=false, particles=[], floaters=[], state='play', level=0, score=0, progress=0, danger=18, hazard=0, time=0, combo=0, specialFlash=0, moves=0, holes=new Set();
+let totalCoins=0, starsEarned=0, fever=0, screenShake=0, lastMatchText='';
 const levelPill=document.getElementById('levelPill'), goalPill=document.getElementById('goalPill'), toast=document.getElementById('toast'), toastTitle=document.getElementById('toastTitle'), toastText=document.getElementById('toastText'), nextBtn=document.getElementById('next');
 document.getElementById('restart').onclick=()=>start(level,true);
 nextBtn.onclick=()=>{ if(state==='won') start((level+1)%levels.length,true); else showToast('Finish this rescue','Fill the rescue meter first, then Next unlocks.',1000); };
@@ -86,31 +87,44 @@ function findMatches(){const groups=[]; for(let r=0;r<ROWS;r++){let run=[]; for(
 }
 function resolve(groups,player){combo++; let seen=new Set(), counts=Array(TYPES.length).fill(0), power=0, bestGroup=0; for(const g of groups){power+=g.length; bestGroup=Math.max(bestGroup,g.length); for(const t of g){const k=t.r+','+t.c; if(seen.has(k))continue; seen.add(k); t.dead=true; t.pop=1; counts[t.type]++; burst(t.x+CELL/2,t.y+CELL/2,TYPES[t.type].c1,t.type===levels[level].special?16:8,t.type===levels[level].special);}}
   const specialCount=counts[levels[level].special], water=counts[0], rope=counts[1];
-  const bigBonus=bestGroup>=4?8:0;
-  const gain=power*3+combo*2+specialCount*8+rope*3+bigBonus;
+  const bigBonus=bestGroup>=4?12:0;
+  const feverBonus=Math.floor(fever/25);
+  const gain=power*3+combo*3+specialCount*9+rope*3+bigBonus+feverBonus;
   progress=clamp(progress+gain,0,levels[level].target);
-  danger=clamp(danger-(power*1.6+specialCount*4.2+rope*2.5+bigBonus),0,98);
-  hazard=clamp(hazard+levels[level].hazard*.16-water*2.6-specialCount*1.9,0,100);
-  score+=gain*10;
-  let label=`+${gain} rescue`;
-  if(bestGroup>=4) label=`BIG MATCH! +${gain}`;
-  if(specialCount) label=`${TYPES[levels[level].special].emoji} ${TYPES[levels[level].special].name} POWER! +${gain}`;
-  if(water&&(levels[level].scene==='lava'||levels[level].scene==='fire')) label=`💧 WATER! hazard cooled`;
+  danger=clamp(danger-(power*1.6+specialCount*4.4+rope*2.7+bigBonus),0,98);
+  hazard=clamp(hazard+levels[level].hazard*.13-water*2.8-specialCount*2.1,0,100);
+  const coinGain=1+Math.floor(gain/12)+(bestGroup>=4?3:0)+specialCount;
+  totalCoins+=coinGain;
+  fever=clamp(fever+power*4+specialCount*8+(bestGroup>=4?16:0),0,100);
+  score+=gain*10+coinGain*25;
+  let label=`+${gain} rescue  🪙+${coinGain}`;
+  if(bestGroup>=4) label=`BLAST MATCH! +${gain}  🪙+${coinGain}`;
+  if(specialCount) label=`${TYPES[levels[level].special].emoji} GOAL POWER! +${gain}  🪙+${coinGain}`;
+  if(water&&(levels[level].scene==='lava'||levels[level].scene==='fire')) label=`💧 WATER! hazard cooled  🪙+${coinGain}`;
+  lastMatchText=label;
   pop(label,W/2,830,specialCount?TYPES[levels[level].special].c1:water?'#56d7ff':'#fff1a8');
   if(specialCount) specialFlash=1;
+  if(bestGroup>=4){screenShake=.6; blastBoard(bestGroup);}
   setTimeout(()=>collapse(),220);
 }
 function collapse(){for(let c=0;c<COLS;c++){let write=ROWS-1; for(let r=ROWS-1;r>=0;r--){if(isHole(c,r))continue; while(write>=0&&isHole(c,write))write--; if(grid[r][c]&&!grid[r][c].dead){const t=grid[r][c]; grid[write][c]=t; t.r=write;t.c=c;t.tx=GRID_X+c*(CELL+GAP);t.ty=GRID_Y+write*(CELL+GAP); if(write!==r)grid[r][c]=isHole(c,r)?null:null; write--;}}
     for(let r=write;r>=0;r--){if(isHole(c,r)){grid[r][c]=null;continue;} const t=tile(rand(TYPES.length),c,r); t.y=GRID_Y-(ROWS-r)*(CELL+GAP); grid[r][c]=t;}}
   setTimeout(()=>{const g=findMatches(); if(g.length) resolve(g,false); else {swapping=false; combo=0; checkWin(); checkLoseByMoves();}},230);
 }
-function checkWin(){if(progress>=levels[level].target && state==='play'){state='won'; nextBtn.disabled=false; for(let i=0;i<100;i++)burst(W/2,250,['#ffd45f','#56d7ff','#ff7aa8','#9cff92'][i%4],1,true); showToast('King Saved!', level===levels.length-1?'You cleared all 5 different rescues!':'Next unlocked — new rescue scene ahead.',2200)}}
+function checkWin(){if(progress>=levels[level].target && state==='play'){state='won'; nextBtn.disabled=false; const starGain=moves>=Math.ceil(levels[level].moves*.55)?3:moves>=Math.ceil(levels[level].moves*.25)?2:1; starsEarned+=starGain; totalCoins+=10+starGain*5; for(let i=0;i<130;i++)burst(W/2,250,['#ffd45f','#56d7ff','#ff7aa8','#9cff92'][i%4],1,true); showToast(`${'⭐'.repeat(starGain)} King Saved!`, level===levels.length-1?`All rescues cleared! Coins: ${totalCoins}`:`${starGain} stars! Next rescue unlocked.`,2600)}}
 function checkLoseByMoves(){if(state==='play'&&moves<=0&&progress<levels[level].target){state='lost';showToast('Out of moves!', 'Restart and focus on the glowing GOAL tiles.', 2400)}}
 function lose(){if(state!=='play')return; state='lost'; showToast('Oh no!', 'Tap anywhere or Restart to try again.', 2400)}
 function pop(text,x,y,color){floaters.push({text,x,y,vy:-1.55,a:1,color})}
 function burst(x,y,color,n=8,wide=false){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*(wide?12:6),vy:(Math.random()-.85)*(wide?12:7),r:3+Math.random()*7,a:1,c:color})}
-function update(dt){if(state==='play'&&!swapping){time+=dt; const L=levels[level]; danger=clamp(danger+L.fall*dt,0,100); hazard=clamp(hazard+L.hazard*dt,0,100); if(danger>=100) lose();}
+function blastBoard(size){
+  // A satisfying kid-friendly blast reward: clear a few random non-goal pieces after a 4+ match.
+  let candidates=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const t=grid[r][c]; if(t&&!t.dead&&t.type!==levels[level].special)candidates.push(t);}
+  for(let i=0;i<Math.min(size-3,candidates.length);i++){const idx=rand(candidates.length), t=candidates.splice(idx,1)[0]; t.dead=true; t.pop=1; burst(t.x+CELL/2,t.y+CELL/2,'#fff4a0',14,true);}
+}
+function update(dt){if(state==='play'&&!swapping){time+=dt; const L=levels[level]; danger=clamp(danger+L.fall*dt,0,100); hazard=clamp(hazard+L.hazard*dt,0,100); fever=clamp(fever-dt*5,0,100); if(danger>=100) lose();}
   if(specialFlash>0)specialFlash=Math.max(0,specialFlash-dt*1.9);
+  if(screenShake>0)screenShake=Math.max(0,screenShake-dt*2.4);
   for(const row of grid)for(const t of row){if(!t)continue;t.x+=(t.tx-t.x)*.24;t.y+=(t.ty-t.y)*.24;if(t.pop>0)t.pop-=.08}
   for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.a-=.025}
   particles=particles.filter(p=>p.a>0); for(const f of floaters){f.y+=f.vy;f.a-=.018} floaters=floaters.filter(f=>f.a>0);
@@ -150,8 +164,17 @@ function drawGrid(){ctx.fillStyle='#10091bdd';round(64,854,772,730,34,true,false
     if(sel){ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([8,6]);round(-CELL/2-5,-CELL/2-5,CELL+10,CELL+10,24,false,true);ctx.setLineDash([])}ctx.restore();}
 }
 function drawFX(){if(specialFlash>0){ctx.save();ctx.globalAlpha=specialFlash*.26;ctx.fillStyle=TYPES[levels[level].special].c1;ctx.fillRect(0,0,W,H);ctx.globalAlpha=specialFlash;ctx.strokeStyle='#fff4a0';ctx.lineWidth=10;round(78,866,744,704,28,false,true);ctx.restore();}for(const p of particles){ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}ctx.globalAlpha=1;for(const f of floaters){ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.strokeStyle='#0008';ctx.lineWidth=5;ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}}
-let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);drawScene();drawGrid();drawFX();ctx.fillStyle='#fce8b8';ctx.font='800 23px system-ui';ctx.textAlign='center';ctx.fillText(`Moves ${moves}  •  Score ${score}  •  Tap adjacent tiles to swap`,W/2,833);requestAnimationFrame(loop)}
-window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,scene:levels[level].scene,shape:levels[level].shape,special:levels[level].special,target:levels[level].target,moves,progress,danger,hazard,nextDisabled:nextBtn.disabled,holes:[...holes],grid:grid.map(row=>row.map(t=>t?t.type:null))})};
+let last=performance.now();function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);
+  ctx.save(); if(screenShake>0)ctx.translate((Math.random()-.5)*18*screenShake,(Math.random()-.5)*18*screenShake);
+  drawScene();drawGrid();drawFX(); ctx.restore();
+  // Persistent arcade-style meta rewards for longer kid engagement.
+  ctx.fillStyle='#100817cc';round(82,792,736,42,19,true,false);
+  ctx.fillStyle='#fce8b8';ctx.font='900 22px system-ui';ctx.textAlign='center';ctx.fillText(`Moves ${moves}  •  Score ${score}  •  🪙 ${totalCoins}  •  ⭐ ${starsEarned}`,W/2,820);
+  ctx.fillStyle='#0e0816cc';round(252,842,396,16,8,true,false);ctx.fillStyle=fever>66?'#ff68d0':fever>33?'#ffd45f':'#56d7ff';round(256,846,388*fever/100,8,4,true,false);ctx.fillStyle='#fff4d0';ctx.font='900 14px system-ui';ctx.fillText('FEVER BONUS',450,839);
+  requestAnimationFrame(loop)
+}
+window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,scene:levels[level].scene,shape:levels[level].shape,special:levels[level].special,target:levels[level].target,moves,progress,danger,hazard,fever,totalCoins,starsEarned,lastMatchText,nextDisabled:nextBtn.disabled,holes:[...holes],grid:grid.map(row=>row.map(t=>t?t.type:null))})};
 start(0,true); requestAnimationFrame(loop);
 })();
 </script>

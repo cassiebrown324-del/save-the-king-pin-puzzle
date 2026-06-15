@@ -1,23 +1,26 @@
 # Save the King — Match Rescue
 
-A playable match-3 rescue game with **five distinct rescue scenes** and now **five different board shapes** with blocked cells, move limits, and harder tuning inspired by Royal Match-style screenshots.
+A playable match-3 rescue game with five distinct rescue scenes and kid-friendly arcade rewards.
 
 ## Play
 
 https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.html
 
+## Big fun update
+
+I dogfooded this with a “would a 12-year-old keep playing?” lens and added longer-session hooks:
+
+- 🪙 coins earned from every match
+- ⭐ 1–3 star level rating based on moves left
+- FEVER BONUS meter for streaks and big matches
+- BLAST MATCH reward for 4+ matches, with screen shake and extra tile clears
+- Bigger win celebration and clearer match feedback
+- Persistent score/coins/stars display
+
 ## Levels
 
-1. **Lava Drop** — WIDE CAVE board, 16 moves, match 🪢 ROPE tiles to pull the king up.
-2. **Flooded Cellar** — HOURGLASS board, 18 moves, match 🔑 KEY tiles to open the drain.
-3. **Kitchen Fire** — DIAMOND board, 19 moves, match 💧 WATER tiles to put out the fire.
-4. **Frozen Throne** — ICE CROSS board, 20 moves, match 🔥 FIRE tiles to melt the ice.
-5. **Dragon Bridge** — BROKEN BRIDGE board, 22 moves, match 🔨 HAMMER tiles to rebuild the bridge.
-
-## Difficulty changes
-
-- Different board shapes per level using blocked cells.
-- Move limits per level.
-- Higher rescue targets and faster danger/hazard growth.
-- Bad swaps cost moves and increase danger.
-- GOAL tiles are highlighted and labeled.
+1. **Lava Drop** — WIDE CAVE board, match 🪢 ROPE tiles.
+2. **Flooded Cellar** — HOURGLASS board, match 🔑 KEY tiles.
+3. **Kitchen Fire** — DIAMOND board, match 💧 WATER tiles.
+4. **Frozen Throne** — ICE CROSS board, match 🔥 FIRE tiles.
+5. **Dragon Bridge** — BROKEN BRIDGE board, match 🔨 HAMMER tiles.
