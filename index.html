@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Save the King — Match Rescue</title>
 <style>
-  :root{--cream:#fff4d0;--gold:#ffd45f;--purple:#281735;--lava:#ff4b24;--sky:#57cfff;}
+  :root{--cream:#fff4d0;--gold:#ffd45f;--lava:#ff4b24;--sky:#57cfff;}
   *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% -10%,#724087,#251833 58%,#0e0915);font-family:Inter,ui-rounded,"Trebuchet MS",system-ui,sans-serif;color:var(--cream)}
+  html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% -10%,#7350a6,#261935 58%,#0d0814);font-family:Inter,ui-rounded,"Trebuchet MS",system-ui,sans-serif;color:var(--cream)}
   #wrap{height:100%;display:grid;place-items:center;padding:12px}
   #phone{position:relative;width:min(96vw,520px);height:min(96vh,920px);aspect-ratio:9/16;border-radius:34px;padding:14px;background:linear-gradient(145deg,#70407a,#2d1b43 60%,#120c1f);box-shadow:0 26px 80px #0009,inset 0 0 0 2px #ffffff20}
   canvas{display:block;width:100%;height:100%;border-radius:25px;background:#160d22;box-shadow:inset 0 0 0 3px #ffffff16}
   #hud{position:absolute;left:27px;right:27px;top:24px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;text-shadow:0 2px 3px #0008}
-  .pill{background:#130b20cc;border:1px solid #ffffff22;border-radius:999px;padding:8px 11px;font-weight:900;font-size:14px;box-shadow:0 8px 20px #0005;backdrop-filter:blur(7px)}
+  .pill{background:#130b20cc;border:1px solid #ffffff22;border-radius:999px;padding:8px 11px;font-weight:900;font-size:13px;box-shadow:0 8px 20px #0005;backdrop-filter:blur(7px)}
   #buttons{position:absolute;left:25px;right:25px;bottom:24px;display:flex;gap:10px;justify-content:space-between;pointer-events:none}
   button{pointer-events:auto;border:0;border-radius:17px;padding:11px 13px;font-weight:950;color:#2a1730;background:linear-gradient(#ffeaa0,#ffc447);box-shadow:0 7px 0 #9b6512,0 15px 26px #0005;cursor:pointer}
   button.secondary{color:#fff1cc;background:linear-gradient(#735185,#422957);box-shadow:0 7px 0 #251532,0 15px 26px #0005}
   button:active{transform:translateY(5px);box-shadow:0 2px 0 #9b6512,0 8px 18px #0005}
   button:disabled{filter:grayscale(.85) brightness(.62);cursor:not-allowed;box-shadow:0 4px 0 #6b4b21,0 10px 18px #0005}
-  #toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);width:82%;border-radius:26px;padding:20px 16px;text-align:center;background:#140b20e8;border:1px solid #ffffff28;box-shadow:0 22px 70px #000b;opacity:0;pointer-events:none;transition:.2s;backdrop-filter:blur(8px)}
+  #toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);width:84%;border-radius:26px;padding:20px 16px;text-align:center;background:#140b20e8;border:1px solid #ffffff28;box-shadow:0 22px 70px #000b;opacity:0;pointer-events:none;transition:.2s;backdrop-filter:blur(8px)}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
   #toast h1{margin:0 0 8px;color:var(--gold);font-size:30px;line-height:1}
   #toast p{margin:0;font-weight:800;color:#fde8b5;font-size:15px}
@@ -29,7 +29,7 @@
   <canvas id="game" width="900" height="1600"></canvas>
   <div id="hud"><div class="pill" id="levelPill">👑 Level 1</div><div class="pill" id="goalPill">Save the King</div></div>
   <div id="buttons"><button class="secondary" id="restart">↻ Restart</button><button id="next" disabled>Next ▶</button></div>
-  <div id="toast"><h1 id="toastTitle">Save him!</h1><p id="toastText">Match 3 jewels to pull the king away from lava.</p></div>
+  <div id="toast"><h1 id="toastTitle">Save him!</h1><p id="toastText">Match 3 tiles to rescue the king.</p></div>
 </div></div>
 <script>
 (()=>{
@@ -38,123 +38,113 @@ const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
 const W=900,H=1600;
 const COLS=7, ROWS=7, CELL=92, GAP=8, GRID_X=(W-(COLS*CELL+(COLS-1)*GAP))/2, GRID_Y=880;
 const TYPES=[
-  {id:0,name:'water',emoji:'💧',c1:'#a7f3ff',c2:'#1b9cf0'},
-  {id:1,name:'crown',emoji:'👑',c1:'#fff8a8',c2:'#ffb300',special:true},
-  {id:2,name:'heart',emoji:'❤️',c1:'#ff97b6',c2:'#e62a54'},
-  {id:3,name:'shield',emoji:'🛡️',c1:'#bba2ff',c2:'#6a42e8'},
-  {id:4,name:'sword',emoji:'⚔️',c1:'#d9f0ff',c2:'#6a879d'},
-  {id:5,name:'leaf',emoji:'🍀',c1:'#a8ffac',c2:'#21a84d'}
+  {id:0,key:'water',name:'WATER',emoji:'💧',c1:'#a7f3ff',c2:'#1599ee'},
+  {id:1,key:'rope',name:'ROPE',emoji:'🪢',c1:'#ffe7a0',c2:'#b36b20'},
+  {id:2,key:'fire',name:'FIRE',emoji:'🔥',c1:'#ffd36a',c2:'#f04a25'},
+  {id:3,key:'key',name:'KEY',emoji:'🔑',c1:'#fff3a1',c2:'#d99b10'},
+  {id:4,key:'hammer',name:'HAMMER',emoji:'🔨',c1:'#d9efff',c2:'#60778d'},
+  {id:5,key:'shield',name:'SHIELD',emoji:'🛡️',c1:'#cbb7ff',c2:'#6e42e8'}
 ];
 const levels=[
-  {name:'Lava Drop', target:70, fall:2.4, lava:1.6, intro:'The king is slipping! Match any 3 jewels to pull the rope. Match 👑 crowns for a bigger pull; match 💧 water to cool the lava.'},
-  {name:'Hotter Lava', target:90, fall:2.8, lava:1.9, intro:'Level 2: the lava rises faster. 👑 crown matches pull harder. 💧 water matches lower the lava.'},
-  {name:'Crumbling Rope', target:105, fall:3.1, lava:2.1, intro:'Level 3: keep matching. Big matches of 4+ pull the king extra far from danger.'},
-  {name:'Lava Wave', target:120, fall:3.4, lava:2.4, intro:'Level 4: the lava wave is climbing. Look for 💧 water to cool it down.'},
-  {name:'Final Rescue', target:135, fall:3.7, lava:2.7, intro:'Final level: save him before the lava catches his boots! Crowns and water are your best matches.'}
+  {name:'Lava Drop', scene:'lava', target:72, fall:2.2, hazard:1.7, special:1, objective:'Match 🪢 ROPE tiles to pull him up', intro:'Level 1: the king is dangling over lava. Match any 3 tiles, but 🪢 ROPE matches pull him up the most.'},
+  {name:'Flooded Cellar', scene:'flood', target:88, fall:2.5, hazard:2.0, special:3, objective:'Match 🔑 KEY tiles to open the drain', intro:'Level 2: water is rising around the king. Match 🔑 KEY tiles to open the drain gate.'},
+  {name:'Kitchen Fire', scene:'fire', target:102, fall:2.8, hazard:2.1, special:0, objective:'Match 💧 WATER tiles to put out fire', intro:'Level 3: the kitchen is burning. Match 💧 WATER tiles to spray the fire out.'},
+  {name:'Frozen Throne', scene:'ice', target:116, fall:3.0, hazard:2.2, special:2, objective:'Match 🔥 FIRE tiles to melt the ice', intro:'Level 4: the king is trapped in ice. Match 🔥 FIRE tiles to melt him free.'},
+  {name:'Dragon Bridge', scene:'dragon', target:132, fall:3.2, hazard:2.4, special:4, objective:'Match 🔨 HAMMER tiles to build the bridge', intro:'Final Level: a dragon broke the bridge. Match 🔨 HAMMER tiles to rebuild the escape path.'}
 ];
-let grid=[], selected=null, swapping=false, particles=[], floaters=[], state='play', level=0, score=0, progress=0, danger=22, lavaHeat=0, time=0, combo=0, crownFlash=0;
+let grid=[], selected=null, swapping=false, particles=[], floaters=[], state='play', level=0, score=0, progress=0, danger=18, hazard=0, time=0, combo=0, specialFlash=0;
 const levelPill=document.getElementById('levelPill'), goalPill=document.getElementById('goalPill'), toast=document.getElementById('toast'), toastTitle=document.getElementById('toastTitle'), toastText=document.getElementById('toastText'), nextBtn=document.getElementById('next');
 document.getElementById('restart').onclick=()=>start(level,true);
-nextBtn.onclick=()=>{ if(state==='won') start((level+1)%levels.length,true); else showToast('Finish the rescue first','Make matches until the rescue meter fills, then Next unlocks.',1000); };
+nextBtn.onclick=()=>{ if(state==='won') start((level+1)%levels.length,true); else showToast('Finish this rescue','Fill the rescue meter first, then Next unlocks.',1000); };
 function rand(n){return Math.floor(Math.random()*n)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function start(l=0,intro=false){level=l; grid=[]; selected=null; swapping=false; particles=[]; floaters=[]; state='play'; score=0; progress=0; danger=18; lavaHeat=0; time=0; combo=0; crownFlash=0; nextBtn.disabled=true;
+function round(x,y,w,h,r,fill,stroke){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke()}
+function start(l=0,intro=false){level=l; grid=[]; selected=null; swapping=false; particles=[]; floaters=[]; state='play'; score=0; progress=0; danger=18; hazard=8; time=0; combo=0; specialFlash=0; nextBtn.disabled=true;
   for(let r=0;r<ROWS;r++){grid[r]=[];for(let c=0;c<COLS;c++){let t; do{t=rand(TYPES.length)}while((c>=2&&grid[r][c-1].type===t&&grid[r][c-2].type===t)||(r>=2&&grid[r-1][c].type===t&&grid[r-2][c].type===t)); grid[r][c]=tile(t,c,r);}}
-  // Make level starts obvious and non-frustrating: first visible swap creates a water match, and another creates a crown match.
-  grid[6][0].type=0;grid[6][1].type=0;grid[6][2].type=1;grid[5][2].type=0;
-  grid[4][4].type=1;grid[5][4].type=1;grid[6][4].type=2;grid[6][5].type=1;
-  levelPill.textContent=`👑 Level ${level+1}/5`;
-  goalPill.textContent='👑 = big pull • 💧 = cool lava';
-  if(intro) showToast(levels[level].name, levels[level].intro, 2200);
+  // Every level starts with an obvious match for that level's goal tile: swap bottom row col 2 upward.
+  const s=levels[level].special;
+  grid[6][0].type=s; grid[6][1].type=s; grid[6][2].type=(s+2)%TYPES.length; grid[5][2].type=s;
+  // Also seed a water rescue on lava/fire levels and a rope match on the side.
+  grid[4][4].type=1; grid[5][4].type=1; grid[6][4].type=5; grid[6][5].type=1;
+  if(levels[level].scene==='lava'||levels[level].scene==='fire'){grid[3][0].type=0;grid[3][1].type=0;grid[4][1].type=0;}
+  levelPill.textContent=`👑 Level ${level+1}/5 — ${levels[level].name}`;
+  goalPill.textContent=levels[level].objective;
+  if(intro) showToast(levels[level].name, levels[level].intro, 2600);
 }
 function tile(type,c,r){return {type,c,r,x:GRID_X+c*(CELL+GAP),y:GRID_Y+r*(CELL+GAP),tx:GRID_X+c*(CELL+GAP),ty:GRID_Y+r*(CELL+GAP),pop:0,dead:false}}
 function showToast(t,m,ms=1300){toastTitle.textContent=t;toastText.textContent=m;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),ms)}
 function screenToGrid(evt){const rect=canvas.getBoundingClientRect(), e=evt.touches?evt.touches[0]:evt; const x=(e.clientX-rect.left)*W/rect.width, y=(e.clientY-rect.top)*H/rect.height; const c=Math.floor((x-GRID_X)/(CELL+GAP)), r=Math.floor((y-GRID_Y)/(CELL+GAP)); if(c<0||c>=COLS||r<0||r>=ROWS)return null; const lx=x-(GRID_X+c*(CELL+GAP)), ly=y-(GRID_Y+r*(CELL+GAP)); if(lx>CELL||ly>CELL)return null; return {c,r};}
 function tap(evt){evt.preventDefault(); if(state==='lost'){start(level,true);return} if(state==='won'){start((level+1)%levels.length,true);return} if(swapping)return; const p=screenToGrid(evt); if(!p)return; if(!selected){selected=p;return} const d=Math.abs(selected.c-p.c)+Math.abs(selected.r-p.r); if(d===0){selected=null;return} if(d===1){swap(selected,p,true); selected=null;} else selected=p;}
 canvas.addEventListener('mousedown',tap); canvas.addEventListener('touchstart',tap,{passive:false});
-function swap(a,b,player){const A=grid[a.r][a.c],B=grid[b.r][b.c]; grid[a.r][a.c]=B; grid[b.r][b.c]=A; [A.c,A.r,B.c,B.r]=[b.c,b.r,a.c,a.r]; A.tx=GRID_X+A.c*(CELL+GAP);A.ty=GRID_Y+A.r*(CELL+GAP);B.tx=GRID_X+B.c*(CELL+GAP);B.ty=GRID_Y+B.r*(CELL+GAP); swapping=true; setTimeout(()=>{const groups=findMatches(); if(groups.length){resolve(groups,player)} else { // invalid swaps still give a tiny rescue so the player never feels stuck
-      if(player){danger=clamp(danger-2,0,96); pop('tiny pull',W/2,820,'#fff1a8');}
-      if(player) swap(b,a,false); swapping=false;
-    }},160);}
+function swap(a,b,player){const A=grid[a.r][a.c],B=grid[b.r][b.c]; grid[a.r][a.c]=B; grid[b.r][b.c]=A; [A.c,A.r,B.c,B.r]=[b.c,b.r,a.c,a.r]; A.tx=GRID_X+A.c*(CELL+GAP);A.ty=GRID_Y+A.r*(CELL+GAP);B.tx=GRID_X+B.c*(CELL+GAP);B.ty=GRID_Y+B.r*(CELL+GAP); swapping=true; setTimeout(()=>{const groups=findMatches(); if(groups.length){resolve(groups,player)} else { if(player){danger=clamp(danger-1.2,0,96); pop('tiny pull',W/2,830,'#fff1a8');} if(player) swap(b,a,false); swapping=false; }},160);}
 function findMatches(){const groups=[]; for(let r=0;r<ROWS;r++){let run=[grid[r][0]]; for(let c=1;c<COLS;c++){if(grid[r][c].type===run[0].type)run.push(grid[r][c]);else{if(run.length>=3)groups.push([...run]);run=[grid[r][c]]}} if(run.length>=3)groups.push([...run]);}
   for(let c=0;c<COLS;c++){let run=[grid[0][c]]; for(let r=1;r<ROWS;r++){if(grid[r][c].type===run[0].type)run.push(grid[r][c]);else{if(run.length>=3)groups.push([...run]);run=[grid[r][c]]}} if(run.length>=3)groups.push([...run]);}
-  // de-dupe by cell while preserving group rewards
   return groups;
 }
-function resolve(groups,player){combo++; let seen=new Set(), water=0, crowns=0, power=0, bestGroup=0; for(const g of groups){power+=g.length; bestGroup=Math.max(bestGroup,g.length); for(const t of g){const k=t.r+','+t.c; if(seen.has(k))continue; seen.add(k); t.dead=true; t.pop=1; if(t.type===0)water++; if(t.type===1)crowns++; burst(t.x+CELL/2,t.y+CELL/2,TYPES[t.type].c1,t.type===1?14:7,t.type===1);}}
-  const bigBonus=bestGroup>=4?10:0;
-  const gain=power*5+combo*3+crowns*8+bigBonus; progress=clamp(progress+gain,0,levels[level].target); danger=clamp(danger-(power*3+water*5+crowns*6+bigBonus),0,98); lavaHeat=clamp(lavaHeat-water*7-crowns*2,0,100); score+=gain*10;
-  let label=`+${gain} rope`;
+function resolve(groups,player){combo++; let seen=new Set(), counts=Array(TYPES.length).fill(0), power=0, bestGroup=0; for(const g of groups){power+=g.length; bestGroup=Math.max(bestGroup,g.length); for(const t of g){const k=t.r+','+t.c; if(seen.has(k))continue; seen.add(k); t.dead=true; t.pop=1; counts[t.type]++; burst(t.x+CELL/2,t.y+CELL/2,TYPES[t.type].c1,t.type===levels[level].special?16:8,t.type===levels[level].special);}}
+  const specialCount=counts[levels[level].special], water=counts[0], rope=counts[1];
+  const bigBonus=bestGroup>=4?12:0;
+  const gain=power*4+combo*3+specialCount*11+rope*5+bigBonus;
+  progress=clamp(progress+gain,0,levels[level].target);
+  danger=clamp(danger-(power*2.6+specialCount*7+rope*4+bigBonus),0,98);
+  hazard=clamp(hazard+levels[level].hazard*.08-water*4-specialCount*3,0,100);
+  score+=gain*10;
+  let label=`+${gain} rescue`;
   if(bestGroup>=4) label=`BIG MATCH! +${gain}`;
-  if(crowns) label=`👑 CROWN POWER! +${gain}`;
-  if(water) label=`💧 WATER MATCH! lava cooled`;
-  if(crowns&&water) label=`👑 + 💧 HUGE RESCUE!`;
-  pop(label,W/2,830,crowns?'#ffd45f':water?'#56d7ff':'#fff1a8');
-  if(crowns) crownFlash=1;
+  if(specialCount) label=`${TYPES[levels[level].special].emoji} ${TYPES[levels[level].special].name} POWER! +${gain}`;
+  if(water&&(levels[level].scene==='lava'||levels[level].scene==='fire')) label=`💧 WATER! hazard cooled`;
+  pop(label,W/2,830,specialCount?TYPES[levels[level].special].c1:water?'#56d7ff':'#fff1a8');
+  if(specialCount) specialFlash=1;
   setTimeout(()=>collapse(),220);
 }
 function collapse(){for(let c=0;c<COLS;c++){let write=ROWS-1; for(let r=ROWS-1;r>=0;r--){if(!grid[r][c].dead){const t=grid[r][c]; grid[write][c]=t; t.r=write;t.c=c;t.tx=GRID_X+c*(CELL+GAP);t.ty=GRID_Y+write*(CELL+GAP); write--;}} for(let r=write;r>=0;r--){const t=tile(rand(TYPES.length),c,r); t.y=GRID_Y-(write-r+1)*(CELL+GAP); grid[r][c]=t;}}
   setTimeout(()=>{const g=findMatches(); if(g.length) resolve(g,false); else {swapping=false; combo=0; checkWin();}},230);
 }
-function checkWin(){if(progress>=levels[level].target && state==='play'){state='won'; nextBtn.disabled=false; for(let i=0;i<100;i++)burst(W/2,250,['#ffd45f','#56d7ff','#ff7aa8','#9cff92'][i%4],1,true); showToast('King Saved!', level===levels.length-1?'You rescued him from all 5 lava traps!':'Next unlocked — tap it for the next rescue.',2200)}}
-function lose(){if(state!=='play')return; state='lost'; showToast('Oh no — lava!', 'Tap anywhere or Restart to try again.', 2600)}
-function pop(text,x,y,color){floaters.push({text,x,y,vy:-1.6,a:1,color})}
+function checkWin(){if(progress>=levels[level].target && state==='play'){state='won'; nextBtn.disabled=false; for(let i=0;i<100;i++)burst(W/2,250,['#ffd45f','#56d7ff','#ff7aa8','#9cff92'][i%4],1,true); showToast('King Saved!', level===levels.length-1?'You cleared all 5 different rescues!':'Next unlocked — new rescue scene ahead.',2200)}}
+function lose(){if(state!=='play')return; state='lost'; showToast('Oh no!', 'Tap anywhere or Restart to try again.', 2400)}
+function pop(text,x,y,color){floaters.push({text,x,y,vy:-1.55,a:1,color})}
 function burst(x,y,color,n=8,wide=false){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*(wide?12:6),vy:(Math.random()-.85)*(wide?12:7),r:3+Math.random()*7,a:1,c:color})}
-function update(dt){if(state==='play'&&!swapping){time+=dt; const L=levels[level]; danger=clamp(danger+L.fall*dt,0,100); lavaHeat=clamp(lavaHeat+L.lava*dt,0,100); if(danger>=100) lose();}
-  if(crownFlash>0)crownFlash=Math.max(0,crownFlash-dt*1.9);
+function update(dt){if(state==='play'&&!swapping){time+=dt; const L=levels[level]; danger=clamp(danger+L.fall*dt,0,100); hazard=clamp(hazard+L.hazard*dt,0,100); if(danger>=100) lose();}
+  if(specialFlash>0)specialFlash=Math.max(0,specialFlash-dt*1.9);
   for(const row of grid)for(const t of row){t.x+=(t.tx-t.x)*.24;t.y+=(t.ty-t.y)*.24;if(t.pop>0)t.pop-=.08}
   for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.a-=.025}
   particles=particles.filter(p=>p.a>0); for(const f of floaters){f.y+=f.vy;f.a-=.018} floaters=floaters.filter(f=>f.a>0);
 }
-function drawCavern(){const g=ctx.createLinearGradient(0,0,0,850);g.addColorStop(0,'#3d2352');g.addColorStop(.55,'#211531');g.addColorStop(1,'#120a19');ctx.fillStyle=g;ctx.fillRect(0,0,W,850);
+function drawScene(){
+  const L=levels[level], p=progress/L.target;
+  const bg=ctx.createLinearGradient(0,0,0,850);bg.addColorStop(0,'#3d2352');bg.addColorStop(.55,'#211531');bg.addColorStop(1,'#120a19');ctx.fillStyle=bg;ctx.fillRect(0,0,W,850);
   ctx.fillStyle='#4f3850'; for(let i=0;i<13;i++){let x=i*82-40; ctx.beginPath();ctx.moveTo(x,80);ctx.lineTo(x+45,210+Math.sin(i)*45);ctx.lineTo(x+90,80);ctx.closePath();ctx.fill();}
   ctx.fillStyle='#2b1c38'; round(55,80,790,730,38,true,false); ctx.strokeStyle='#ffffff18';ctx.lineWidth=5;round(55,80,790,730,38,false,true);
-  // lava pool
-  const lavaY=690-lavaHeat*.95; const lg=ctx.createLinearGradient(0,lavaY,0,820);lg.addColorStop(0,'#fff06a');lg.addColorStop(.22,'#ff8b28');lg.addColorStop(1,'#b2112b'); ctx.fillStyle=lg; ctx.beginPath();ctx.moveTo(65,lavaY); for(let x=65;x<=835;x+=28)ctx.lineTo(x,lavaY+Math.sin((x+time*180)*.035)*13); ctx.lineTo(835,820);ctx.lineTo(65,820);ctx.closePath();ctx.fill(); ctx.shadowBlur=35;ctx.shadowColor='#ff4b24';ctx.strokeStyle='#ffdb66';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(65,lavaY);for(let x=65;x<=835;x+=28)ctx.lineTo(x,lavaY+Math.sin((x+time*180)*.035)*13);ctx.stroke();ctx.shadowBlur=0;
-  for(let i=0;i<18;i++){const x=95+(i*53+time*50)%720,y=lavaY+30+(i*37)%95;ctx.fillStyle=`rgba(255,230,88,${.18+(i%4)*.07})`;ctx.beginPath();ctx.arc(x,y,7+(i%5)*3,0,Math.PI*2);ctx.fill();}
-  // rescue rope and king
-  const target=levels[level].target; const saved=progress/target; const kingY=clamp(610-danger*4.1 - saved*150,190,635); const ropeTop=105;
-  ctx.strokeStyle='#d7b46f';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(W/2,ropeTop);ctx.lineTo(W/2,kingY-54);ctx.stroke();
-  ctx.fillStyle='#ffe17b';ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.fillText('MATCH 3 TO PULL THE ROPE',W/2,855);
-  drawKing(W/2,kingY,state==='lost'); if(kingY+62>lavaY) lose();
-  // meters
-  meter(110,132,260,24,progress/target,'RESCUE','#ffd45f'); meter(530,132,260,24,1-danger/100,'SAFETY','#56d7ff');
-  // simple legend so tile meanings are visible while playing
-  ctx.fillStyle='#100817cc';round(135,172,630,55,18,true,false);ctx.strokeStyle='#ffffff20';ctx.lineWidth=2;round(135,172,630,55,18,false,true);
-  ctx.fillStyle='#fff4d0';ctx.font='900 22px system-ui';ctx.textAlign='center';ctx.fillText('👑 CROWN POWER = BIG PULL     💧 WATER = COOL LAVA',450,207);
+  if(L.scene==='lava') drawLava(p);
+  if(L.scene==='flood') drawFlood(p);
+  if(L.scene==='fire') drawFire(p);
+  if(L.scene==='ice') drawIce(p);
+  if(L.scene==='dragon') drawDragon(p);
+  meter(100,132,280,24,p,'RESCUE','#ffd45f'); meter(520,132,280,24,1-danger/100,'SAFETY','#56d7ff');
+  ctx.fillStyle='#100817cc';round(100,172,700,58,18,true,false);ctx.strokeStyle='#ffffff20';ctx.lineWidth=2;round(100,172,700,58,18,false,true);
+  const T=TYPES[L.special];ctx.fillStyle='#fff4d0';ctx.font='900 21px system-ui';ctx.textAlign='center';ctx.fillText(`${T.emoji} ${T.name} tiles = LEVEL GOAL     🪢 ROPE = pulls upward`,450,207);
+  ctx.fillStyle='#ffe17b';ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.fillText(L.objective.toUpperCase(),W/2,855);
 }
-function drawKing(x,y,sad){ctx.save();ctx.translate(x,y);ctx.shadowBlur=20;ctx.shadowColor=sad?'#ff432d':'#ffd45f';ctx.fillStyle='#7049c8';round(-43,33,86,92,28,true,false);ctx.fillStyle='#ffd0a0';ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff3d7';ctx.beginPath();ctx.ellipse(0,24,38,25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd65d';ctx.strokeStyle='#8d5b10';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-42,-30);ctx.lineTo(-28,-72);ctx.lineTo(-8,-36);ctx.lineTo(10,-74);ctx.lineTo(28,-36);ctx.lineTo(43,-72);ctx.lineTo(39,-30);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#27172f';ctx.beginPath();ctx.arc(-16,-4,5,0,Math.PI*2);ctx.arc(16,-4,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#9b5555';ctx.lineWidth=4;ctx.beginPath(); if(sad)ctx.arc(0,22,14,Math.PI,0);else ctx.arc(0,12,15,0,Math.PI);ctx.stroke();ctx.restore()}
+function kingY(p){return clamp(620-danger*3.5-p*170,185,642)}
+function drawRopeKing(x,y,sad=false){ctx.strokeStyle='#d7b46f';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x,105);ctx.lineTo(x,y-54);ctx.stroke();drawKing(x,y,sad)}
+function drawLava(p){const lavaY=690-hazard*.9; drawLavaPool(lavaY); drawRopeKing(W/2,kingY(p),state==='lost'); if(kingY(p)+62>lavaY) lose();}
+function drawFlood(p){const waterY=700-(100-hazard+p*45)*3.0; ctx.fillStyle='#143252';round(95,250,710,430,28,true,false); ctx.fillStyle='rgba(60,190,255,.75)';ctx.beginPath();ctx.moveTo(95,waterY);for(let x=95;x<=805;x+=24)ctx.lineTo(x,waterY+Math.sin(time*4+x*.04)*9);ctx.lineTo(805,680);ctx.lineTo(95,680);ctx.closePath();ctx.fill(); ctx.fillStyle='#3b2a28';round(330,520,240,75,20,true,false);ctx.fillStyle=p>.8?'#58e882':'#d44444';ctx.beginPath();ctx.arc(715,500,30,0,7);ctx.fill();drawRopeKing(W/2,clamp(610-hazard*2.2-p*145,220,630),state==='lost'); if(hazard>98)lose();}
+function drawFire(p){ctx.fillStyle='#523329';round(105,250,690,420,28,true,false);ctx.fillStyle='#7b4d33';round(210,562,480,70,18,true,false);const flames=Math.ceil(14*(1-p)+hazard/12);for(let i=0;i<flames;i++)drawFlame(140+(i*50)%630,555-Math.floor(i/12)*70+Math.sin(time*8+i)*8,58*(1-p*.55));if(p>.25){ctx.font='72px system-ui';ctx.fillText('💦',620,310+p*120)}drawRopeKing(W/2,clamp(575-hazard*1.8-p*160,210,610),state==='lost');if(hazard>99)lose();}
+function drawIce(p){ctx.fillStyle='#173255';round(105,250,690,420,28,true,false);const iceAlpha=.82*(1-p);ctx.fillStyle=`rgba(155,235,255,${iceAlpha})`;round(255,330,390,290,30,true,false);ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=5;for(let i=0;i<7;i++){ctx.beginPath();ctx.moveTo(280+i*52,340);ctx.lineTo(245+i*60,610);ctx.stroke()}if(p>.2){for(let i=0;i<6;i++)drawFlame(180+i*105,645,35+p*22)}drawKing(W/2,480,state==='lost');if(hazard>99)lose();}
+function drawDragon(p){ctx.fillStyle='#2d2236';round(105,250,690,420,28,true,false);ctx.font='120px system-ui';ctx.fillText('🐉',635,420);drawFlame(555,485,70*(1-p*.5));ctx.fillStyle='#5f3d2e';round(140,590,180+p*460,44,16,true,false);ctx.strokeStyle='#d8b077';ctx.lineWidth=7;for(let i=0;i<Math.floor(4+p*10);i++){ctx.beginPath();ctx.moveTo(160+i*45,586);ctx.lineTo(160+i*45,640);ctx.stroke()}drawKing(170+p*470,535,state==='lost');if(hazard>99)lose();}
+function drawLavaPool(lavaY){const lg=ctx.createLinearGradient(0,lavaY,0,820);lg.addColorStop(0,'#fff06a');lg.addColorStop(.22,'#ff8b28');lg.addColorStop(1,'#b2112b');ctx.fillStyle=lg;ctx.beginPath();ctx.moveTo(65,lavaY);for(let x=65;x<=835;x+=28)ctx.lineTo(x,lavaY+Math.sin((x+time*180)*.035)*13);ctx.lineTo(835,820);ctx.lineTo(65,820);ctx.closePath();ctx.fill();ctx.shadowBlur=35;ctx.shadowColor='#ff4b24';ctx.strokeStyle='#ffdb66';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(65,lavaY);for(let x=65;x<=835;x+=28)ctx.lineTo(x,lavaY+Math.sin((x+time*180)*.035)*13);ctx.stroke();ctx.shadowBlur=0;}
+function drawFlame(x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s/60,s/60);ctx.fillStyle='#ff4a32';ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(-38,-35,-12,-70,0,-105);ctx.bezierCurveTo(18,-65,48,-38,0,0);ctx.fill();ctx.fillStyle='#ffd15a';ctx.beginPath();ctx.moveTo(0,-8);ctx.bezierCurveTo(-19,-32,-4,-50,8,-75);ctx.bezierCurveTo(20,-46,30,-25,0,-8);ctx.fill();ctx.restore()}
+function drawKing(x,y,sad){ctx.save();ctx.translate(x,y+Math.sin(time*5)*3);ctx.shadowBlur=20;ctx.shadowColor=sad?'#ff432d':'#ffd45f';ctx.fillStyle='#7049c8';round(-43,33,86,92,28,true,false);ctx.fillStyle='#ffd0a0';ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff3d7';ctx.beginPath();ctx.ellipse(0,24,38,25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd65d';ctx.strokeStyle='#8d5b10';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-42,-30);ctx.lineTo(-28,-72);ctx.lineTo(-8,-36);ctx.lineTo(10,-74);ctx.lineTo(28,-36);ctx.lineTo(43,-72);ctx.lineTo(39,-30);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#27172f';ctx.beginPath();ctx.arc(-16,-4,5,0,7);ctx.arc(16,-4,5,0,7);ctx.fill();ctx.strokeStyle='#9b5555';ctx.lineWidth=4;ctx.beginPath();if(sad)ctx.arc(0,22,14,Math.PI,0);else ctx.arc(0,12,15,0,Math.PI);ctx.stroke();ctx.restore()}
 function meter(x,y,w,h,p,label,color){ctx.fillStyle='#0e0816cc';round(x,y,w,h,12,true,false);ctx.fillStyle=color;round(x+3,y+3,(w-6)*clamp(p,0,1),h-6,10,true,false);ctx.fillStyle='#fff4d0';ctx.font='900 15px system-ui';ctx.textAlign='center';ctx.fillText(label,x+w/2,y-8)}
-function drawGrid(){ctx.fillStyle='#10091bdd';round(64,854,772,730,34,true,false);ctx.strokeStyle='#ffffff18';ctx.lineWidth=4;round(64,854,772,730,34,false,true);
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    const t=grid[r][c], T=TYPES[t.type], isCrown=t.type===1; const sel=selected&&selected.r===r&&selected.c===c;
-    ctx.save();ctx.translate(t.x+CELL/2,t.y+CELL/2);
-    const breathe=isCrown?1+Math.sin(time*5+c+r)*.035:1;
-    const sc=(1+(t.pop>0?t.pop*.22:0)+(sel?.08:0))*breathe;ctx.scale(sc,sc);
-    ctx.shadowBlur=isCrown?28:(sel?22:10);ctx.shadowColor=isCrown?'#ffe45f':(sel?'#fff4a0':T.c2);
-    const grd=ctx.createLinearGradient(-CELL/2,-CELL/2,CELL/2,CELL/2);grd.addColorStop(0,T.c1);grd.addColorStop(1,T.c2);ctx.fillStyle=grd;round(-CELL/2,-CELL/2,CELL,CELL,22,true,false);
-    if(isCrown){
-      ctx.strokeStyle='#6f4200';ctx.lineWidth=7;round(-CELL/2+3,-CELL/2+3,CELL-6,CELL-6,20,false,true);
-      ctx.strokeStyle='#fff7ad';ctx.lineWidth=3;round(-CELL/2+10,-CELL/2+10,CELL-20,CELL-20,16,false,true);
-      ctx.fillStyle='rgba(255,255,255,.34)';ctx.beginPath();ctx.arc(-20,-22,8+Math.sin(time*7)*2,0,Math.PI*2);ctx.arc(20,-20,6,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#5a3500';ctx.font='900 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('POWER',0,31);
-      ctx.font='54px system-ui';ctx.fillText(T.emoji,0,-5);
-    } else {
-      ctx.strokeStyle=sel?'#fff4a0':'#ffffff55';ctx.lineWidth=sel?6:3;round(-CELL/2+2,-CELL/2+2,CELL-4,CELL-4,20,false,true);
-      ctx.font='42px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(T.emoji,0,3);
-    }
-    if(sel){ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([8,6]);round(-CELL/2-5,-CELL/2-5,CELL+10,CELL+10,24,false,true);ctx.setLineDash([])}
-    ctx.restore();
-  }
+function drawGrid(){ctx.fillStyle='#10091bdd';round(64,854,772,730,34,true,false);ctx.strokeStyle='#ffffff18';ctx.lineWidth=4;round(64,854,772,730,34,false,true);const special=levels[level].special;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const t=grid[r][c], T=TYPES[t.type], isGoal=t.type===special, isRope=t.type===1; const sel=selected&&selected.r===r&&selected.c===c;ctx.save();ctx.translate(t.x+CELL/2,t.y+CELL/2);const breathe=isGoal?1+Math.sin(time*5+c+r)*.04:1;const sc=(1+(t.pop>0?t.pop*.22:0)+(sel?.08:0))*breathe;ctx.scale(sc,sc);ctx.shadowBlur=isGoal?30:(sel?22:10);ctx.shadowColor=isGoal?T.c1:(sel?'#fff4a0':T.c2);const grd=ctx.createLinearGradient(-CELL/2,-CELL/2,CELL/2,CELL/2);grd.addColorStop(0,T.c1);grd.addColorStop(1,T.c2);ctx.fillStyle=grd;round(-CELL/2,-CELL/2,CELL,CELL,22,true,false);
+    if(isGoal){ctx.strokeStyle='#ffffff';ctx.lineWidth=7;round(-CELL/2+3,-CELL/2+3,CELL-6,CELL-6,20,false,true);ctx.strokeStyle='#3b2100';ctx.lineWidth=3;round(-CELL/2+11,-CELL/2+11,CELL-22,CELL-22,16,false,true);ctx.fillStyle='rgba(255,255,255,.34)';ctx.beginPath();ctx.arc(-20,-22,8+Math.sin(time*7)*2,0,7);ctx.arc(20,-20,6,0,7);ctx.fill();ctx.fillStyle='#351d08';ctx.font='900 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('GOAL',0,31);ctx.font='54px system-ui';ctx.fillText(T.emoji,0,-5);}
+    else {ctx.strokeStyle=sel?'#fff4a0':'#ffffff55';ctx.lineWidth=sel?6:3;round(-CELL/2+2,-CELL/2+2,CELL-4,CELL-4,20,false,true);ctx.font=isRope?'48px system-ui':'42px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(T.emoji,0,isRope?-2:3);if(isRope){ctx.fillStyle='#5b3714';ctx.font='900 12px system-ui';ctx.fillText('PULL',0,31);}}
+    if(sel){ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([8,6]);round(-CELL/2-5,-CELL/2-5,CELL+10,CELL+10,24,false,true);ctx.setLineDash([])}ctx.restore();}
 }
-function drawFX(){
-  if(crownFlash>0){ctx.save();ctx.globalAlpha=crownFlash*.32;ctx.fillStyle='#ffd45f';ctx.fillRect(0,0,W,H);ctx.globalAlpha=crownFlash;ctx.strokeStyle='#fff4a0';ctx.lineWidth=10;round(78,866,744,704,28,false,true);ctx.restore();}
-  for(const p of particles){ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
-  for(const f of floaters){ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.strokeStyle='#0008';ctx.lineWidth=5;ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}
-}
-function round(x,y,w,h,r,fill,stroke){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke()}
-let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);drawCavern();drawGrid();drawFX();ctx.fillStyle='#fce8b8';ctx.font='800 23px system-ui';ctx.textAlign='center';ctx.fillText(`Score ${score}  •  Drag or tap adjacent jewels to swap`,W/2,833);requestAnimationFrame(loop)}
-window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,progress,danger,nextDisabled:nextBtn.disabled,grid:grid.map(row=>row.map(t=>t.type))})};
+function drawFX(){if(specialFlash>0){ctx.save();ctx.globalAlpha=specialFlash*.26;ctx.fillStyle=TYPES[levels[level].special].c1;ctx.fillRect(0,0,W,H);ctx.globalAlpha=specialFlash;ctx.strokeStyle='#fff4a0';ctx.lineWidth=10;round(78,866,744,704,28,false,true);ctx.restore();}for(const p of particles){ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}ctx.globalAlpha=1;for(const f of floaters){ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.strokeStyle='#0008';ctx.lineWidth=5;ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}}
+let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);drawScene();drawGrid();drawFX();ctx.fillStyle='#fce8b8';ctx.font='800 23px system-ui';ctx.textAlign='center';ctx.fillText(`Score ${score}  •  Tap adjacent tiles to swap`,W/2,833);requestAnimationFrame(loop)}
+window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,scene:levels[level].scene,special:levels[level].special,progress,danger,nextDisabled:nextBtn.disabled,grid:grid.map(row=>row.map(t=>t.type))})};
 start(0,true); requestAnimationFrame(loop);
 })();
 </script>

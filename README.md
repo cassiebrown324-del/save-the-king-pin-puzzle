@@ -1,22 +1,23 @@
 # Save the King — Match Rescue
 
-A playable match-3 rescue game: the king is dangling above rising lava, and every match pulls him toward safety.
+A playable match-3 rescue game with **five distinct rescue scenes**. The king is in a different danger each level, and the goal tile changes to match the rescue.
 
 ## Play
 
 https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.html
 
-## What changed
+## Levels
 
-- Crown pieces are now bright gold POWER tiles with a thicker border, larger crown icon, glow, sparkle dots, and a POWER label.
-- Crown matches now give a bigger pull and trigger a gold flash.
-- Big matches of 4+ give an extra rescue bonus.
-- On-screen legend explains crown and water pieces.
+1. **Lava Drop** — match 🪢 ROPE tiles to pull the king up from lava.
+2. **Flooded Cellar** — match 🔑 KEY tiles to open the drain.
+3. **Kitchen Fire** — match 💧 WATER tiles to put out the fire.
+4. **Frozen Throne** — match 🔥 FIRE tiles to melt the ice.
+5. **Dragon Bridge** — match 🔨 HAMMER tiles to rebuild the bridge.
+
+## Important change
+
+The confusing crown power tile is gone. Each level now has a clearly labeled **GOAL** tile, and the HUD tells you exactly what to match.
 
 ## How to play
 
-- Tap/click two adjacent jewels to swap them.
-- Make matches of 3+ to pull the rope and move the king away from lava.
-- Water matches cool the lava.
-- Crown matches give extra rescue power.
-- If the lava catches the king, restart and try again.
+Tap/click two adjacent tiles to swap them. Match 3 or more. The current level’s GOAL tile gives the biggest rescue progress, and rope tiles also help pull the king upward.
