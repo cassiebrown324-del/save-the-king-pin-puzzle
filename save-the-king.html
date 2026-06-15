@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Save the King — Pin Puzzle</title>
+<style>
+  :root{
+    --bg1:#211431;--bg2:#3b1f4f;--gold:#ffd36b;--cream:#fff3cf;--red:#ff4e42;--blue:#58c7ff;--green:#74e07b;
+  }
+  *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;font-family:Inter,ui-rounded,"Trebuchet MS",system-ui,sans-serif;background:radial-gradient(circle at 50% 0%,#5d3173 0%,#261635 45%,#120c1b 100%);color:var(--cream)}
+  #wrap{height:100%;display:grid;place-items:center;padding:14px}
+  #gameShell{position:relative;width:min(96vw,520px);height:min(96vh,840px);max-height:940px;aspect-ratio:9/16;border-radius:32px;padding:14px;background:linear-gradient(145deg,#6c3a78,#2e1a44 55%,#120c1e);box-shadow:0 24px 70px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.13)}
+  canvas{width:100%;height:100%;display:block;border-radius:24px;background:#221538;box-shadow:inset 0 0 0 3px rgba(255,255,255,.10)}
+  #hud{position:absolute;left:24px;right:24px;top:22px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none;text-shadow:0 2px 3px rgba(0,0,0,.45)}
+  .badge{pointer-events:auto;display:flex;align-items:center;gap:7px;background:rgba(22,12,33,.74);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:8px 12px;box-shadow:0 8px 18px rgba(0,0,0,.22);backdrop-filter:blur(8px);font-weight:800;font-size:14px}
+  #controls{position:absolute;left:24px;right:24px;bottom:24px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+  button{pointer-events:auto;border:0;border-radius:18px;padding:12px 14px;font-weight:900;font-size:14px;letter-spacing:.2px;color:#2b1830;background:linear-gradient(#ffe797,#ffc74c);box-shadow:0 7px 0 #a86f16,0 14px 22px rgba(0,0,0,.32);cursor:pointer;transition:.08s transform,.08s box-shadow}
+  button:active{transform:translateY(5px);box-shadow:0 2px 0 #a86f16,0 8px 16px rgba(0,0,0,.28)}
+  button.secondary{color:#fff3cf;background:linear-gradient(#735083,#432857);box-shadow:0 7px 0 #261633,0 14px 22px rgba(0,0,0,.32)}
+  #toast{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%) scale(.9);min-width:78%;padding:22px 18px;border-radius:26px;background:rgba(20,10,31,.86);border:1px solid rgba(255,255,255,.18);box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;opacity:0;pointer-events:none;transition:.22s;backdrop-filter:blur(9px)}
+  #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #toast h1{margin:0 0 8px;font-size:30px;line-height:1.05;color:var(--gold)}
+  #toast p{margin:0;color:#f7e6ba;font-weight:700;font-size:15px}
+  #toast small{display:block;margin-top:10px;color:#cdb8dd;font-weight:700}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="gameShell">
+    <canvas id="game" width="900" height="1600"></canvas>
+    <div id="hud">
+      <div class="badge" id="levelBadge">👑 Level 1</div>
+      <div class="badge" id="goalBadge">Save the king</div>
+    </div>
+    <div id="controls">
+      <button class="secondary" id="resetBtn">↻ Restart</button>
+      <button id="nextBtn">Next ▶</button>
+    </div>
+    <div id="toast"><h1 id="toastTitle">Ready?</h1><p id="toastText">Pull the pins in the right order.</p><small>Click / tap golden pins to remove them</small></div>
+  </div>
+</div>
+<script>
+(() => {
+'use strict';
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const DPR = 1;
+const rand = (a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const dist2=(a,b,c,d)=>{const x=a-c,y=b-d;return x*x+y*y};
+
+const levels = [
+  { name:'Hot Tub Trouble', goal:'Cool the lava', king:{x:450,y:1350}, spawns:[{type:'water',x:255,y:165,n:58},{type:'lava',x:650,y:755,n:36}], pins:[{x:450,y:380,w:560,a:0},{x:450,y:690,w:560,a:0},{x:450,y:1010,w:560,a:0}], walls:[{x:160,y:90,w:580,h:36},{x:160,y:470,w:580,h:32},{x:160,y:795,w:580,h:32},{x:160,y:1110,w:580,h:32}], msg:'Wash the lava away before it reaches the throne.'},
+  { name:'Snake Drop', goal:'Drown the snake', king:{x:655,y:1355}, spawns:[{type:'water',x:255,y:150,n:62},{type:'snake',x:655,y:690,n:1}], pins:[{x:450,y:420,w:570,a:0},{x:315,y:770,w:330,a:-0.2},{x:585,y:1030,w:360,a:0.2}], walls:[{x:110,y:90,w:690,h:34},{x:110,y:510,w:690,h:32},{x:110,y:890,w:690,h:32},{x:410,y:1185,w:380,h:32}], msg:'Flood the snake chamber; keep the king dry and alive.'},
+  { name:'Royal Payday', goal:'Get treasure', king:{x:455,y:1360}, spawns:[{type:'gold',x:250,y:160,n:34},{type:'lava',x:650,y:190,n:30}], pins:[{x:450,y:420,w:590,a:0},{x:295,y:735,w:330,a:-0.13},{x:605,y:735,w:330,a:0.13},{x:450,y:1065,w:570,a:0}], walls:[{x:110,y:90,w:690,h:34},{x:110,y:510,w:690,h:32},{x:110,y:845,w:690,h:32},{x:110,y:1165,w:690,h:32}], msg:'Drop gold to the king, but never drop lava.'},
+  { name:'Steam Before Gold', goal:'Combo puzzle', king:{x:455,y:1360}, spawns:[{type:'water',x:190,y:155,n:55},{type:'lava',x:450,y:510,n:35},{type:'gold',x:700,y:155,n:30}], pins:[{x:450,y:360,w:610,a:0},{x:235,y:670,w:325,a:-0.2},{x:665,y:670,w:325,a:0.2},{x:450,y:980,w:610,a:0},{x:450,y:1225,w:330,a:0}], walls:[{x:95,y:90,w:710,h:34},{x:95,y:455,w:710,h:32},{x:95,y:795,w:710,h:32},{x:95,y:1110,w:710,h:32}], msg:'Use water to neutralize lava, then deliver the treasure.'},
+  { name:'The Final Rescue', goal:'Save the king', king:{x:450,y:1360}, spawns:[{type:'water',x:160,y:145,n:52},{type:'lava',x:450,y:145,n:42},{type:'gold',x:735,y:145,n:32},{type:'snake',x:450,y:760,n:1}], pins:[{x:300,y:360,w:410,a:-0.17},{x:600,y:360,w:410,a:0.17},{x:450,y:615,w:650,a:0},{x:235,y:880,w:330,a:-0.24},{x:665,y:880,w:330,a:0.24},{x:450,y:1160,w:530,a:0}], walls:[{x:80,y:90,w:740,h:34},{x:80,y:455,w:740,h:32},{x:80,y:725,w:740,h:32},{x:80,y:1005,w:740,h:32}], msg:'One wrong pin and the king is toast.'}
+];
+
+let L=0, particles=[], pins=[], walls=[], king, state='playing', tick=0, gotGold=0, lavaSafe=false, snakeAlive=false, confetti=[];
+const levelBadge=document.getElementById('levelBadge');
+const goalBadge=document.getElementById('goalBadge');
+const toast=document.getElementById('toast');
+const toastTitle=document.getElementById('toastTitle');
+const toastText=document.getElementById('toastText');
+
+document.getElementById('resetBtn').onclick=()=>loadLevel(L,true);
+document.getElementById('nextBtn').onclick=()=>{ if(state==='won') loadLevel((L+1)%levels.length,true); else showToast('Think first!', 'Win the level before moving on.', 900); };
+
+function loadLevel(i, intro=false){
+  L=i; tick=0; state='playing'; particles=[]; confetti=[]; gotGold=0; lavaSafe=false; snakeAlive=false;
+  const lv=levels[L];
+  king={...lv.king, r:58, mood:'worried', alive:true, gold:0};
+  pins=lv.pins.map((p,idx)=>({...p, id:idx, removed:false, len:p.w, thick:24, pulse:Math.random()*9}));
+  walls=lv.walls.map(w=>({...w}));
+  for(const s of lv.spawns){
+    if(s.type==='snake') { particles.push(new Snake(s.x,s.y)); snakeAlive=true; continue; }
+    for(let n=0;n<s.n;n++) particles.push(new Particle(s.type, s.x+rand(-70,70), s.y+rand(-45,45)));
+  }
+  levelBadge.textContent=`👑 Level ${L+1}`;
+  goalBadge.textContent=lv.goal;
+  if(intro) showToast(lv.name, lv.msg, 1600);
+}
+
+class Particle{
+  constructor(type,x,y){ this.type=type; this.x=x; this.y=y; this.vx=rand(-.9,.9); this.vy=rand(-.6,.8); this.r= type==='gold'?14: type==='lava'?12:10; this.dead=false; this.life=9999; }
+  color(){ return this.type==='water'?'#55c9ff':this.type==='lava'?'#ff543e':this.type==='gold'?'#ffd76f':'#eee'; }
+  update(){
+    if(this.dead) return;
+    const g=this.type==='gold'?0.42:0.31;
+    this.vy+=g; this.vx*=.995; this.vy*=.998; this.x+=this.vx; this.y+=this.vy;
+    if(this.x<this.r+58){this.x=this.r+58;this.vx=Math.abs(this.vx)*.55}
+    if(this.x>W-this.r-58){this.x=W-this.r-58;this.vx=-Math.abs(this.vx)*.55}
+    if(this.y<this.r+52){this.y=this.r+52;this.vy=Math.abs(this.vy)*.55}
+    if(this.y>H-70){this.y=H-70;this.vy*=-.22;this.vx*=.72}
+    for(const wall of walls) collideRect(this, wall, .45);
+    for(const pin of pins) if(!pin.removed) collideSegment(this, pin, .55);
+    // particle interactions
+    if(tick%2===0){
+      for(const o of particles){ if(o===this||o.dead) continue;
+        if((this.type==='water'&&o.type==='lava')||(this.type==='lava'&&o.type==='water')){
+          if(dist2(this.x,this.y,o.x,o.y)<900){ this.dead=o.dead=true; makeSteam((this.x+o.x)/2,(this.y+o.y)/2); lavaSafe=true; break; }
+        }
+      }
+    }
+    // king contact
+    const dk=dist2(this.x,this.y,king.x,king.y);
+    if(dk<(king.r+this.r-5)**2){
+      if(this.type==='lava'){ lose('Ouch!', 'The lava reached the king. Try a safer order.'); this.dead=true; }
+      if(this.type==='gold'){ this.dead=true; king.gold++; gotGold++; popText('💰',king.x,king.y-72,'#ffd76f'); }
+      if(this.type==='water'){ this.dead=true; popText('💧',king.x+rand(-22,22),king.y-72,'#58c7ff'); }
+    }
+  }
+  draw(){
+    if(this.dead) return;
+    ctx.save();
+    const c=this.color();
+    ctx.shadowBlur=this.type==='lava'?20:this.type==='gold'?12:4; ctx.shadowColor=c;
+    const grd=ctx.createRadialGradient(this.x-this.r*.3,this.y-this.r*.45,2,this.x,this.y,this.r*1.2);
+    if(this.type==='water'){grd.addColorStop(0,'#c9f4ff');grd.addColorStop(.45,'#59cfff');grd.addColorStop(1,'#1874d7')}
+    if(this.type==='lava'){grd.addColorStop(0,'#fff3a5');grd.addColorStop(.35,'#ff7b3d');grd.addColorStop(1,'#a3152f')}
+    if(this.type==='gold'){grd.addColorStop(0,'#fff7bc');grd.addColorStop(.45,'#ffd65c');grd.addColorStop(1,'#a9660c')}
+    ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill();
+    if(this.type==='gold'){ctx.strokeStyle='rgba(120,65,8,.55)';ctx.lineWidth=3;ctx.stroke();}
+    ctx.restore();
+  }
+}
+
+class Snake{
+  constructor(x,y){this.type='snake';this.x=x;this.y=y;this.vx=rand(-1,1);this.vy=0;this.r=38;this.dead=false;this.wet=0;}
+  update(){
+    if(this.dead)return;
+    this.vy+=.27; this.x+=this.vx; this.y+=this.vy; this.vx+=Math.sin(tick*.06)*.03;
+    if(this.x<this.r+58||this.x>W-this.r-58)this.vx*=-.7;
+    this.x=clamp(this.x,this.r+58,W-this.r-58); if(this.y>H-90){this.y=H-90;this.vy*=-.25;}
+    for(const wall of walls) collideRect(this, wall, .35);
+    for(const pin of pins) if(!pin.removed) collideSegment(this, pin, .5);
+    for(const p of particles){ if(p.type==='water'&&!p.dead&&dist2(this.x,this.y,p.x,p.y)<(this.r+p.r)**2){ p.dead=true; this.wet++; makeSteam(p.x,p.y,'#99eaff'); }}
+    if(this.wet>10){this.dead=true; snakeAlive=false; popText('SPLASH!',this.x,this.y-45,'#9eeeff');}
+    if(dist2(this.x,this.y,king.x,king.y)<(this.r+king.r-8)**2) lose('Ssssorry!', 'The snake got the king. Drown it first.');
+  }
+  draw(){ if(this.dead)return; ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(Math.sin(tick*.08)*.18); ctx.shadowBlur=16;ctx.shadowColor='#72ee78';
+    ctx.fillStyle='#57c95c'; ctx.beginPath(); ctx.ellipse(0,0,55,31,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#92f08a'; for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(i*16,-7,5,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='#2d6835'; ctx.beginPath();ctx.arc(20,-7,5,0,Math.PI*2);ctx.arc(38,-5,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#ff6780';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(52,3);ctx.lineTo(70,0);ctx.moveTo(70,0);ctx.lineTo(80,-8);ctx.moveTo(70,0);ctx.lineTo(80,8);ctx.stroke(); ctx.restore(); }
+}
+
+function collideRect(p,r,bounce){
+  const cx=clamp(p.x,r.x,r.x+r.w), cy=clamp(p.y,r.y,r.y+r.h); const dx=p.x-cx,dy=p.y-cy; const d=dx*dx+dy*dy;
+  if(d<p.r*p.r){ const len=Math.sqrt(d)||1; const nx=dx/len, ny=dy/len; p.x=cx+nx*(p.r+1); p.y=cy+ny*(p.r+1); const dot=p.vx*nx+p.vy*ny; p.vx-= (1+bounce)*dot*nx; p.vy-= (1+bounce)*dot*ny; }
+}
+function collideSegment(p,s,bounce){
+  const ca=Math.cos(s.a), sa=Math.sin(s.a); const x1=s.x-ca*s.len/2, y1=s.y-sa*s.len/2, x2=s.x+ca*s.len/2, y2=s.y+sa*s.len/2;
+  const vx=x2-x1,vy=y2-y1, wx=p.x-x1, wy=p.y-y1; const c=clamp((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1); const cx=x1+c*vx, cy=y1+c*vy;
+  const dx=p.x-cx, dy=p.y-cy; const min=p.r+s.thick/2; const d=dx*dx+dy*dy;
+  if(d<min*min){ const len=Math.sqrt(d)||1; const nx=dx/len,ny=dy/len; p.x=cx+nx*(min+1); p.y=cy+ny*(min+1); const dot=p.vx*nx+p.vy*ny; p.vx-= (1+bounce)*dot*nx; p.vy-= (1+bounce)*dot*ny; p.vx+=sa*.03; }
+}
+
+let floaters=[];
+function popText(text,x,y,color){floaters.push({text,x,y,vy:-1.5,a:1,color});}
+function makeSteam(x,y,color='#f4d6be'){ for(let i=0;i<7;i++) confetti.push({x,y,vx:rand(-2,2),vy:rand(-4,-1),r:rand(4,12),a:1,c:color}); }
+
+function drawBg(){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3b2155');g.addColorStop(.5,'#201432');g.addColorStop(1,'#100b19');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // stone border
+  ctx.fillStyle='#2a1a3c'; roundRect(48,56,W-96,H-112,38,true,false); ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=5; roundRect(48,56,W-96,H-112,38,false,true);
+  // decorative tile speckles
+  for(let i=0;i<24;i++){ const x=(i*137+tick*.12)%W; const y=85+((i*211)%1380); ctx.fillStyle=`rgba(255,255,255,${.025+(i%3)*.012})`; ctx.beginPath();ctx.arc(x,y,2+(i%4),0,Math.PI*2);ctx.fill(); }
+}
+function drawWalls(){
+  for(const w of walls){
+    const grd=ctx.createLinearGradient(w.x,w.y,w.x,w.y+w.h);grd.addColorStop(0,'#8b6b82');grd.addColorStop(.45,'#5b405f');grd.addColorStop(1,'#31233b');ctx.fillStyle=grd; roundRect(w.x,w.y,w.w,w.h,15,true,false);
+    ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2;roundRect(w.x+2,w.y+2,w.w-4,w.h-4,12,false,true);
+    for(let x=w.x+25;x<w.x+w.w;x+=55){ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(x,w.y+4,3,w.h-8)}
+  }
+}
+function drawPins(){
+  for(const p of pins){ if(p.removed){ continue; }
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); p.pulse+=.06; const glow=8+Math.sin(p.pulse)*3;
+    ctx.shadowBlur=glow;ctx.shadowColor='#ffd15a';
+    const grd=ctx.createLinearGradient(-p.len/2,0,p.len/2,0);grd.addColorStop(0,'#7a4512');grd.addColorStop(.09,'#ffed9d');grd.addColorStop(.5,'#ffc64f');grd.addColorStop(.91,'#ffed9d');grd.addColorStop(1,'#7a4512');
+    ctx.strokeStyle=grd;ctx.lineWidth=p.thick;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-p.len/2,0);ctx.lineTo(p.len/2,0);ctx.stroke();
+    ctx.fillStyle='#ffe796';ctx.strokeStyle='#7a4512';ctx.lineWidth=5;ctx.beginPath();ctx.arc(-p.len/2,0,28,0,Math.PI*2);ctx.arc(p.len/2,0,28,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#513012';ctx.font='bold 26px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✦',0,1);
+    ctx.restore();
+  }
+}
+function drawKing(){
+  ctx.save(); ctx.translate(king.x,king.y); const bob=Math.sin(tick*.08)*4;
+  ctx.shadowBlur=22; ctx.shadowColor= state==='lost'?'#ff4444':'#ffd15a';
+  // throne
+  ctx.fillStyle='#5d2a67'; roundRect(-84,12,168,120,22,true,false); ctx.fillStyle='#7b3c82'; roundRect(-68,-5,136,94,22,true,false);
+  // body/head
+  ctx.fillStyle='#6b58c8'; roundRect(-38,34+bob,76,78,26,true,false); ctx.fillStyle='#ffd3a1'; ctx.beginPath();ctx.arc(0,bob,45,0,Math.PI*2);ctx.fill();
+  // beard
+  ctx.fillStyle='#fff0d1';ctx.beginPath();ctx.ellipse(0,21+bob,37,25,0,0,Math.PI*2);ctx.fill();
+  // crown
+  ctx.fillStyle='#ffd65c';ctx.strokeStyle='#8f5d13';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-38,-31+bob);ctx.lineTo(-24,-70+bob);ctx.lineTo(-7,-36+bob);ctx.lineTo(11,-72+bob);ctx.lineTo(26,-36+bob);ctx.lineTo(40,-70+bob);ctx.lineTo(36,-31+bob);ctx.closePath();ctx.fill();ctx.stroke();
+  // face
+  ctx.fillStyle='#2c1932';ctx.beginPath();ctx.arc(-15,-3+bob,4,0,Math.PI*2);ctx.arc(15,-3+bob,4,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#9b5a55';ctx.lineWidth=3;ctx.beginPath();
+  if(state==='lost'){ctx.arc(0,17+bob,13,Math.PI,0);} else if(state==='won'){ctx.arc(0,8+bob,15,0,Math.PI);} else {ctx.arc(0,17+bob,10,Math.PI*.12,Math.PI*.88);} ctx.stroke();
+  if(king.gold>0){ctx.font='bold 30px system-ui';ctx.fillStyle='#ffd76f';ctx.fillText('×'+king.gold,45,-65+bob);}
+  ctx.restore();
+}
+function drawFloaters(){
+  for(const f of floaters){f.y+=f.vy;f.a-=.018;ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.font='900 34px system-ui';ctx.textAlign='center';ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=5;ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}
+  floaters=floaters.filter(f=>f.a>0);
+  for(const c of confetti){c.x+=c.vx;c.y+=c.vy;c.vy+=.06;c.a-=.018;ctx.globalAlpha=Math.max(0,c.a);ctx.fillStyle=c.c;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  confetti=confetti.filter(c=>c.a>0);
+}
+
+function update(){
+  if(state!=='playing') return;
+  tick++;
+  for(const p of particles) p.update();
+  particles=particles.filter(p=>!p.dead && p.y<H+80);
+  if(tick%30===0) checkWin();
+}
+function checkWin(){
+  const remainingLava=particles.filter(p=>p.type==='lava').length;
+  const remainingGold=particles.filter(p=>p.type==='gold').length;
+  const hasGoldGoal=levels[L].spawns.some(s=>s.type==='gold');
+  const hasSnake=levels[L].spawns.some(s=>s.type==='snake');
+  const noMovingHazards=remainingLava===0 && (!hasSnake || !snakeAlive);
+  const goldDone=!hasGoldGoal || gotGold>=Math.max(8, Math.floor(levels[L].spawns.find(s=>s.type==='gold')?.n*.35 || 0)) || remainingGold===0 && gotGold>0;
+  const allPinsGone=pins.every(p=>p.removed);
+  if(noMovingHazards && goldDone && (allPinsGone || tick>420)) win();
+}
+function win(){ if(state!=='playing')return; state='won'; king.mood='happy'; for(let i=0;i<90;i++) confetti.push({x:king.x,y:king.y-100,vx:rand(-6,6),vy:rand(-10,-2),r:rand(4,10),a:1,c:['#ffd76f','#58c7ff','#ff7ad9','#72e078'][i%4]}); showToast('King Saved!', L===levels.length-1?'You beat every rescue puzzle.':'Nice! Ready for the next trap?', 2200); }
+function lose(title,msg){ if(state!=='playing')return; state='lost'; king.alive=false; showToast(title,msg,2200); }
+function showToast(title,msg,ms){ toastTitle.textContent=title; toastText.textContent=msg; toast.classList.add('show'); clearTimeout(showToast.t); showToast.t=setTimeout(()=>toast.classList.remove('show'),ms); }
+
+function draw(){
+  update(); drawBg(); drawWalls(); drawPins(); drawKing();
+  // Sort: fluids behind, snake/gold above slightly
+  for(const p of particles) if(p.type!=='snake') p.draw();
+  for(const p of particles) if(p.type==='snake') p.draw();
+  drawFloaters();
+  // bottom hint plaque
+  ctx.save(); ctx.globalAlpha=.82; ctx.fillStyle='#130b1d'; roundRect(92,H-132,W-184,58,20,true,false); ctx.fillStyle='#fce9b9'; ctx.font='800 25px system-ui'; ctx.textAlign='center'; ctx.fillText(state==='playing'?'Tap a golden pin to pull it':state==='won'?'Saved! Press Next ▶':'Try Restart ↻',W/2,H-96); ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+function roundRect(x,y,w,h,r,fill,stroke){
+  r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); if(fill)ctx.fill(); if(stroke)ctx.stroke();
+}
+
+function getPoint(evt){ const rect=canvas.getBoundingClientRect(); const t=evt.touches?evt.touches[0]:evt; return {x:(t.clientX-rect.left)*W/rect.width, y:(t.clientY-rect.top)*H/rect.height}; }
+function tap(evt){ evt.preventDefault(); if(state!=='playing'){ if(state==='lost') loadLevel(L,true); return; } const pt=getPoint(evt); for(const p of pins){ if(p.removed) continue; const ca=Math.cos(p.a),sa=Math.sin(p.a); const x1=p.x-ca*p.len/2,y1=p.y-sa*p.len/2,x2=p.x+ca*p.len/2,y2=p.y+sa*p.len/2; const vx=x2-x1,vy=y2-y1,wx=pt.x-x1,wy=pt.y-y1; const c=clamp((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1); const cx=x1+c*vx,cy=y1+c*vy; if(dist2(pt.x,pt.y,cx,cy)<2500){ p.removed=true; for(let i=0;i<16;i++) confetti.push({x:pt.x,y:pt.y,vx:rand(-4,4),vy:rand(-6,1),r:rand(3,7),a:1,c:'#ffd76f'}); checkWin(); return; }} }
+canvas.addEventListener('mousedown',tap); canvas.addEventListener('touchstart',tap,{passive:false});
+window.addEventListener('keydown',e=>{ if(e.key==='r'||e.key==='R')loadLevel(L,true); if(e.key==='n'||e.key==='N')loadLevel((L+1)%levels.length,true); });
+loadLevel(0,true); draw();
+})();
+</script>
+</body>
+</html>
