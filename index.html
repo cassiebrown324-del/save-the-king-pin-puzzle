@@ -3,258 +3,197 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Save the King — Pin Puzzle</title>
+<title>Save the King — Match Rescue</title>
 <style>
-  :root{
-    --bg1:#211431;--bg2:#3b1f4f;--gold:#ffd36b;--cream:#fff3cf;--red:#ff4e42;--blue:#58c7ff;--green:#74e07b;
-  }
   *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;overflow:hidden;font-family:Inter,ui-rounded,"Trebuchet MS",system-ui,sans-serif;background:radial-gradient(circle at 50% 0%,#5d3173 0%,#261635 45%,#120c1b 100%);color:var(--cream)}
-  #wrap{height:100%;display:grid;place-items:center;padding:14px}
-  #gameShell{position:relative;width:min(96vw,520px);height:min(96vh,840px);max-height:940px;aspect-ratio:9/16;border-radius:32px;padding:14px;background:linear-gradient(145deg,#6c3a78,#2e1a44 55%,#120c1e);box-shadow:0 24px 70px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.13)}
-  canvas{width:100%;height:100%;display:block;border-radius:24px;background:#221538;box-shadow:inset 0 0 0 3px rgba(255,255,255,.10)}
-  #hud{position:absolute;left:24px;right:24px;top:22px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none;text-shadow:0 2px 3px rgba(0,0,0,.45)}
-  .badge{pointer-events:auto;display:flex;align-items:center;gap:7px;background:rgba(22,12,33,.74);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:8px 12px;box-shadow:0 8px 18px rgba(0,0,0,.22);backdrop-filter:blur(8px);font-weight:800;font-size:14px}
-  #controls{position:absolute;left:24px;right:24px;bottom:24px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-  button{pointer-events:auto;border:0;border-radius:18px;padding:12px 14px;font-weight:900;font-size:14px;letter-spacing:.2px;color:#2b1830;background:linear-gradient(#ffe797,#ffc74c);box-shadow:0 7px 0 #a86f16,0 14px 22px rgba(0,0,0,.32);cursor:pointer;transition:.08s transform,.08s box-shadow}
-  button:active{transform:translateY(5px);box-shadow:0 2px 0 #a86f16,0 8px 16px rgba(0,0,0,.28)}
-  button.secondary{color:#fff3cf;background:linear-gradient(#735083,#432857);box-shadow:0 7px 0 #261633,0 14px 22px rgba(0,0,0,.32)}
-  #toast{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%) scale(.9);min-width:78%;padding:22px 18px;border-radius:26px;background:rgba(20,10,31,.86);border:1px solid rgba(255,255,255,.18);box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;opacity:0;pointer-events:none;transition:.22s;backdrop-filter:blur(9px)}
+  html,body{margin:0;height:100%;overflow:hidden;background:radial-gradient(circle at top,#6951b8 0,#241442 48%,#10091d 100%);font-family:Inter,ui-rounded,"Trebuchet MS",system-ui,sans-serif;color:#fff7d6}
+  #wrap{height:100%;display:grid;place-items:center;padding:10px}
+  #phone{width:min(96vw,520px);height:min(96vh,920px);aspect-ratio:9/16;position:relative;border-radius:34px;padding:14px;background:linear-gradient(145deg,#8163d7,#3a2261 55%,#160c2b);box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 0 0 2px rgba(255,255,255,.14)}
+  canvas{width:100%;height:100%;display:block;border-radius:25px;background:#1a1030;box-shadow:inset 0 0 0 3px rgba(255,255,255,.12)}
+  #ui{position:absolute;inset:14px;pointer-events:none}
+  .topbar{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .pill{pointer-events:auto;background:rgba(16,9,31,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 11px;font-weight:900;font-size:13px;box-shadow:0 8px 18px rgba(0,0,0,.22);backdrop-filter:blur(8px);text-shadow:0 2px 2px rgba(0,0,0,.35)}
+  .bottombar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;gap:8px}
+  button{pointer-events:auto;border:0;border-radius:17px;padding:11px 13px;font-weight:950;font-size:14px;color:#2b1830;background:linear-gradient(#ffe99d,#ffc34d);box-shadow:0 7px 0 #9b6918,0 13px 20px rgba(0,0,0,.28);cursor:pointer;transition:.08s}
+  button:active{transform:translateY(5px);box-shadow:0 2px 0 #9b6918,0 7px 14px rgba(0,0,0,.28)}
+  button.secondary{color:#fff1cf;background:linear-gradient(#765d9b,#452767);box-shadow:0 7px 0 #241536,0 13px 20px rgba(0,0,0,.28)}
+  button:disabled{filter:grayscale(.8) brightness(.65);cursor:not-allowed}
+  #toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.94);width:84%;padding:22px 18px;border-radius:26px;background:rgba(17,9,31,.88);border:1px solid rgba(255,255,255,.18);box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;opacity:0;pointer-events:none;transition:.22s;backdrop-filter:blur(10px)}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  #toast h1{margin:0 0 8px;font-size:30px;line-height:1.05;color:var(--gold)}
-  #toast p{margin:0;color:#f7e6ba;font-weight:700;font-size:15px}
-  #toast small{display:block;margin-top:10px;color:#cdb8dd;font-weight:700}
+  #toast h1{margin:0 0 8px;color:#ffd666;font-size:30px;line-height:1.05}
+  #toast p{margin:0;color:#fff0c6;font-weight:800;font-size:15px;line-height:1.28}
+  #toast small{display:block;margin-top:9px;color:#cfc0ec;font-weight:800}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="gameShell">
-    <canvas id="game" width="900" height="1600"></canvas>
-    <div id="hud">
-      <div class="badge" id="levelBadge">👑 Level 1</div>
-      <div class="badge" id="goalBadge">Save the king</div>
-    </div>
-    <div id="controls">
-      <button class="secondary" id="resetBtn">↻ Restart</button>
-      <button id="nextBtn">Next ▶</button>
-    </div>
-    <div id="toast"><h1 id="toastTitle">Ready?</h1><p id="toastText">Pull the pins in the right order.</p><small>Click / tap golden pins to remove them</small></div>
+<div id="wrap"><div id="phone">
+  <canvas id="game" width="900" height="1600"></canvas>
+  <div id="ui">
+    <div class="topbar"><div class="pill" id="levelPill">Level 1</div><div class="pill" id="goalPill">Match water</div><div class="pill" id="movePill">Moves 20</div></div>
+    <div class="bottombar"><button class="secondary" id="resetBtn">↻ Restart</button><button class="secondary" id="shuffleBtn">Shuffle</button><button id="nextBtn" disabled>Next ▶</button></div>
+    <div id="toast"><h1 id="toastTitle"></h1><p id="toastText"></p><small>Swap tiles to match 3+</small></div>
   </div>
-</div>
+</div></div>
 <script>
-(() => {
+(()=>{
 'use strict';
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
-const DPR = 1;
-const rand = (a,b)=>a+Math.random()*(b-a);
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const dist2=(a,b,c,d)=>{const x=a-c,y=b-d;return x*x+y*y};
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=900,H=1600;
+const levelPill=document.getElementById('levelPill'),goalPill=document.getElementById('goalPill'),movePill=document.getElementById('movePill');
+const resetBtn=document.getElementById('resetBtn'),shuffleBtn=document.getElementById('shuffleBtn'),nextBtn=document.getElementById('nextBtn');
+const toast=document.getElementById('toast'),toastTitle=document.getElementById('toastTitle'),toastText=document.getElementById('toastText');
 
-const levels = [
-  { name:'Hot Tub Trouble', goal:'Cool the lava', king:{x:450,y:1350}, spawns:[{type:'water',x:255,y:165,n:58},{type:'lava',x:650,y:755,n:36}], pins:[{x:450,y:380,w:560,a:0},{x:450,y:690,w:560,a:0},{x:450,y:1010,w:560,a:0}], walls:[{x:160,y:90,w:580,h:36},{x:160,y:470,w:580,h:32},{x:160,y:795,w:580,h:32},{x:160,y:1110,w:580,h:32}], msg:'Wash the lava away before it reaches the throne.'},
-  { name:'Snake Drop', goal:'Drown the snake', king:{x:655,y:1355}, spawns:[{type:'water',x:255,y:150,n:62},{type:'snake',x:655,y:690,n:1}], pins:[{x:450,y:420,w:570,a:0},{x:315,y:770,w:330,a:-0.2},{x:585,y:1030,w:360,a:0.2}], walls:[{x:110,y:90,w:690,h:34},{x:110,y:510,w:690,h:32},{x:110,y:890,w:690,h:32},{x:410,y:1185,w:380,h:32}], msg:'Flood the snake chamber; keep the king dry and alive.'},
-  { name:'Royal Payday', goal:'Get treasure', king:{x:455,y:1360}, spawns:[{type:'gold',x:250,y:160,n:34},{type:'lava',x:650,y:190,n:30}], pins:[{x:450,y:420,w:590,a:0},{x:295,y:735,w:330,a:-0.13},{x:605,y:735,w:330,a:0.13},{x:450,y:1065,w:570,a:0}], walls:[{x:110,y:90,w:690,h:34},{x:110,y:510,w:690,h:32},{x:110,y:845,w:690,h:32},{x:110,y:1165,w:690,h:32}], msg:'Drop gold to the king, but never drop lava.'},
-  { name:'Steam Before Gold', goal:'Combo puzzle', king:{x:455,y:1360}, spawns:[{type:'water',x:190,y:155,n:55},{type:'lava',x:450,y:510,n:35},{type:'gold',x:700,y:155,n:30}], pins:[{x:450,y:360,w:610,a:0},{x:235,y:670,w:325,a:-0.2},{x:665,y:670,w:325,a:0.2},{x:450,y:980,w:610,a:0},{x:450,y:1225,w:330,a:0}], walls:[{x:95,y:90,w:710,h:34},{x:95,y:455,w:710,h:32},{x:95,y:795,w:710,h:32},{x:95,y:1110,w:710,h:32}], msg:'Use water to neutralize lava, then deliver the treasure.'},
-  { name:'The Final Rescue', goal:'Save the king', king:{x:450,y:1360}, spawns:[{type:'water',x:160,y:145,n:52},{type:'lava',x:450,y:145,n:42},{type:'gold',x:735,y:145,n:32},{type:'snake',x:450,y:760,n:1}], pins:[{x:300,y:360,w:410,a:-0.17},{x:600,y:360,w:410,a:0.17},{x:450,y:615,w:650,a:0},{x:235,y:880,w:330,a:-0.24},{x:665,y:880,w:330,a:0.24},{x:450,y:1160,w:530,a:0}], walls:[{x:80,y:90,w:740,h:34},{x:80,y:455,w:740,h:32},{x:80,y:725,w:740,h:32},{x:80,y:1005,w:740,h:32}], msg:'One wrong pin and the king is toast.'}
+const TILE={water:{emoji:'💧',c:'#45c8ff',name:'water'},fire:{emoji:'🔥',c:'#ff6b3b',name:'fire'},key:{emoji:'🔑',c:'#ffd45e',name:'keys'},hammer:{emoji:'🔨',c:'#b88bff',name:'hammers'},coin:{emoji:'🪙',c:'#ffe06a',name:'coins'},leaf:{emoji:'🍃',c:'#60e584',name:'leaves'}};
+const TYPES=Object.keys(TILE);
+const levels=[
+ {title:'Lava Bath',objective:'Match 💧 water to flood the lava',target:'water',need:14,moves:22,scene:'lava',danger:'lava',intro:'The king is trapped over lava. Match blue water drops to pour water into the chamber.',win:'The water covered the lava. The king is safe!'},
+ {title:'Kitchen Fire',objective:'Match 💧 water to put out the fire',target:'water',need:18,moves:24,scene:'fire',danger:'fire',intro:'Fire is surrounding the king. Fill the bucket by matching water.',win:'Splash! The kitchen fire is out.'},
+ {title:'Frozen King',objective:'Match 🔥 fire to melt the ice',target:'fire',need:16,moves:23,scene:'ice',danger:'ice',intro:'The king is frozen solid. Match fire tiles to warm the room.',win:'The ice melted and the king can move again.'},
+ {title:'Locked Flood',objective:'Match 🔑 keys to open the drain',target:'key',need:15,moves:22,scene:'flood',danger:'flood',intro:'Water is rising around the king. Match keys to unlock the drain gate.',win:'The gate opened and the flood drained away.'},
+ {title:'Dragon Door',objective:'Match 🔨 hammers to build an escape bridge',target:'hammer',need:18,moves:25,scene:'dragon',danger:'dragon',intro:'A dragon blocks the exit. Match hammers to build a bridge and escape.',win:'Bridge built. The king escaped the dragon!'}
 ];
+let L=0,board=[],selected=null,anim=[],particles=[],state='playing',progress=0,moves=0,message='',comboText=[];
+const N=8,cell=88,gap=8,boardX=(W-(N*cell+(N-1)*gap))/2,boardY=910;
 
-let L=0, particles=[], pins=[], walls=[], king, state='playing', tick=0, gotGold=0, lavaSafe=false, snakeAlive=false, confetti=[];
-const levelBadge=document.getElementById('levelBadge');
-const goalBadge=document.getElementById('goalBadge');
-const toast=document.getElementById('toast');
-const toastTitle=document.getElementById('toastTitle');
-const toastText=document.getElementById('toastText');
+function showToast(t,txt,ms=1600){toastTitle.textContent=t;toastText.textContent=txt;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),ms)}
+function randType(){return TYPES[(Math.random()*TYPES.length)|0]}
+function level(){return levels[L]}
+function startLevel(i=L){L=i;state='playing';progress=0;moves=level().moves;selected=null;anim=[];particles=[];comboText=[];message='';nextBtn.disabled=true;buildBoard();updateHud();showToast(level().title,level().intro,1900)}
+function buildBoard(){
+ board=Array.from({length:N},()=>Array(N).fill(null));
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++){let t; do{t=randType()}while((c>=2&&board[r][c-1]===t&&board[r][c-2]===t)||(r>=2&&board[r-1][c]===t&&board[r-2][c]===t)); board[r][c]=t;}
+ if(!hasMove()) sprinkleTarget();
+}
+function sprinkleTarget(){for(let i=0;i<7;i++)board[(Math.random()*N)|0][(Math.random()*N)|0]=level().target}
+function updateHud(){levelPill.textContent=`👑 ${L+1}/${levels.length} ${level().title}`;goalPill.textContent=`${TILE[level().target].emoji} ${progress}/${level().need}`;movePill.textContent=`Moves ${moves}`}
 
-document.getElementById('resetBtn').onclick=()=>loadLevel(L,true);
-document.getElementById('nextBtn').onclick=()=>{ if(state==='won') loadLevel((L+1)%levels.length,true); else showToast('Think first!', 'Win the level before moving on.', 900); };
-
-function loadLevel(i, intro=false){
-  L=i; tick=0; state='playing'; particles=[]; confetti=[]; gotGold=0; lavaSafe=false; snakeAlive=false;
-  const lv=levels[L];
-  king={...lv.king, r:58, mood:'worried', alive:true, gold:0};
-  pins=lv.pins.map((p,idx)=>({...p, id:idx, removed:false, len:p.w, thick:24, pulse:Math.random()*9}));
-  walls=lv.walls.map(w=>({...w}));
-  for(const s of lv.spawns){
-    if(s.type==='snake') { particles.push(new Snake(s.x,s.y)); snakeAlive=true; continue; }
-    for(let n=0;n<s.n;n++) particles.push(new Particle(s.type, s.x+rand(-70,70), s.y+rand(-45,45)));
+function matches(){
+ const groups=[];
+ for(let r=0;r<N;r++){let c=0;while(c<N){let t=board[r][c],s=c;while(c<N&&board[r][c]===t)c++;if(t&&c-s>=3)groups.push([...Array(c-s)].map((_,i)=>[r,s+i]));}}
+ for(let c=0;c<N;c++){let r=0;while(r<N){let t=board[r][c],s=r;while(r<N&&board[r][c]===t)r++;if(t&&r-s>=3)groups.push([...Array(r-s)].map((_,i)=>[s+i,c]));}}
+ return groups;
+}
+function hasMove(){
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++)for(const [dr,dc] of [[1,0],[0,1]]){let r2=r+dr,c2=c+dc;if(r2<N&&c2<N){swapCells(r,c,r2,c2);let ok=matches().length>0;swapCells(r,c,r2,c2);if(ok)return true;}}
+ return false;
+}
+function swapCells(r,c,r2,c2){const t=board[r][c];board[r][c]=board[r2][c2];board[r2][c2]=t}
+function doSwap(a,b){
+ if(state!=='playing')return;
+ const d=Math.abs(a.r-b.r)+Math.abs(a.c-b.c); if(d!==1){selected=b;return;}
+ swapCells(a.r,a.c,b.r,b.c); const m=matches();
+ if(!m.length){swapCells(a.r,a.c,b.r,b.c); selected=b; pulseText('No match',W/2,boardY-28,'#fff0c6'); return;}
+ moves--; selected=null; resolveMatches(m);
+}
+function resolveMatches(initial){
+ let chain=0;
+ const step=(m)=>{
+  if(!m.length){ if(!hasMove())shuffleBoard(false); checkEnd(); updateHud(); return; }
+  chain++;
+  const cells=new Map(); m.flat().forEach(([r,c])=>cells.set(r+','+c,[r,c]));
+  let gained=0;
+  for(const [r,c] of cells.values()){
+    const t=board[r][c]; if(t===level().target)gained++;
+    burst(tileCX(c),tileCY(r),TILE[t].c,TILE[t].emoji); board[r][c]=null;
   }
-  levelBadge.textContent=`👑 Level ${L+1}`;
-  goalBadge.textContent=lv.goal;
-  if(intro) showToast(lv.name, lv.msg, 1600);
+  if(gained){progress=Math.min(level().need,progress+gained); pulseText(`+${gained} ${TILE[level().target].emoji}`,W/2,boardY-45,TILE[level().target].c); pourEffect(gained);}
+  dropAndFill(); updateHud();
+  setTimeout(()=>step(matches()),210);
+ };
+ step(initial);
 }
-
-class Particle{
-  constructor(type,x,y){ this.type=type; this.x=x; this.y=y; this.vx=rand(-.9,.9); this.vy=rand(-.6,.8); this.r= type==='gold'?14: type==='lava'?12:10; this.dead=false; this.life=9999; }
-  color(){ return this.type==='water'?'#55c9ff':this.type==='lava'?'#ff543e':this.type==='gold'?'#ffd76f':'#eee'; }
-  update(){
-    if(this.dead) return;
-    const g=this.type==='gold'?0.42:0.31;
-    this.vy+=g; this.vx*=.995; this.vy*=.998; this.x+=this.vx; this.y+=this.vy;
-    if(this.x<this.r+58){this.x=this.r+58;this.vx=Math.abs(this.vx)*.55}
-    if(this.x>W-this.r-58){this.x=W-this.r-58;this.vx=-Math.abs(this.vx)*.55}
-    if(this.y<this.r+52){this.y=this.r+52;this.vy=Math.abs(this.vy)*.55}
-    if(this.y>H-70){this.y=H-70;this.vy*=-.22;this.vx*=.72}
-    for(const wall of walls) collideRect(this, wall, .45);
-    for(const pin of pins) if(!pin.removed) collideSegment(this, pin, .55);
-    // particle interactions
-    if(tick%2===0){
-      for(const o of particles){ if(o===this||o.dead) continue;
-        if((this.type==='water'&&o.type==='lava')||(this.type==='lava'&&o.type==='water')){
-          if(dist2(this.x,this.y,o.x,o.y)<900){ this.dead=o.dead=true; makeSteam((this.x+o.x)/2,(this.y+o.y)/2); lavaSafe=true; break; }
-        }
-      }
-    }
-    // king contact
-    const dk=dist2(this.x,this.y,king.x,king.y);
-    if(dk<(king.r+this.r-5)**2){
-      if(this.type==='lava'){ lose('Ouch!', 'The lava reached the king. Try a safer order.'); this.dead=true; }
-      if(this.type==='gold'){ this.dead=true; king.gold++; gotGold++; popText('💰',king.x,king.y-72,'#ffd76f'); }
-      if(this.type==='water'){ this.dead=true; popText('💧',king.x+rand(-22,22),king.y-72,'#58c7ff'); }
-    }
-  }
-  draw(){
-    if(this.dead) return;
-    ctx.save();
-    const c=this.color();
-    ctx.shadowBlur=this.type==='lava'?20:this.type==='gold'?12:4; ctx.shadowColor=c;
-    const grd=ctx.createRadialGradient(this.x-this.r*.3,this.y-this.r*.45,2,this.x,this.y,this.r*1.2);
-    if(this.type==='water'){grd.addColorStop(0,'#c9f4ff');grd.addColorStop(.45,'#59cfff');grd.addColorStop(1,'#1874d7')}
-    if(this.type==='lava'){grd.addColorStop(0,'#fff3a5');grd.addColorStop(.35,'#ff7b3d');grd.addColorStop(1,'#a3152f')}
-    if(this.type==='gold'){grd.addColorStop(0,'#fff7bc');grd.addColorStop(.45,'#ffd65c');grd.addColorStop(1,'#a9660c')}
-    ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill();
-    if(this.type==='gold'){ctx.strokeStyle='rgba(120,65,8,.55)';ctx.lineWidth=3;ctx.stroke();}
-    ctx.restore();
-  }
+function dropAndFill(){
+ for(let c=0;c<N;c++){
+  let write=N-1;
+  for(let r=N-1;r>=0;r--)if(board[r][c]){board[write][c]=board[r][c]; if(write!==r)board[r][c]=null; write--;}
+  for(let r=write;r>=0;r--)board[r][c]=randType();
+ }
 }
-
-class Snake{
-  constructor(x,y){this.type='snake';this.x=x;this.y=y;this.vx=rand(-1,1);this.vy=0;this.r=38;this.dead=false;this.wet=0;}
-  update(){
-    if(this.dead)return;
-    this.vy+=.27; this.x+=this.vx; this.y+=this.vy; this.vx+=Math.sin(tick*.06)*.03;
-    if(this.x<this.r+58||this.x>W-this.r-58)this.vx*=-.7;
-    this.x=clamp(this.x,this.r+58,W-this.r-58); if(this.y>H-90){this.y=H-90;this.vy*=-.25;}
-    for(const wall of walls) collideRect(this, wall, .35);
-    for(const pin of pins) if(!pin.removed) collideSegment(this, pin, .5);
-    for(const p of particles){ if(p.type==='water'&&!p.dead&&dist2(this.x,this.y,p.x,p.y)<(this.r+p.r)**2){ p.dead=true; this.wet++; makeSteam(p.x,p.y,'#99eaff'); }}
-    if(this.wet>10){this.dead=true; snakeAlive=false; popText('SPLASH!',this.x,this.y-45,'#9eeeff');}
-    if(dist2(this.x,this.y,king.x,king.y)<(this.r+king.r-8)**2) lose('Ssssorry!', 'The snake got the king. Drown it first.');
-  }
-  draw(){ if(this.dead)return; ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(Math.sin(tick*.08)*.18); ctx.shadowBlur=16;ctx.shadowColor='#72ee78';
-    ctx.fillStyle='#57c95c'; ctx.beginPath(); ctx.ellipse(0,0,55,31,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#92f08a'; for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(i*16,-7,5,0,Math.PI*2);ctx.fill();}
-    ctx.fillStyle='#2d6835'; ctx.beginPath();ctx.arc(20,-7,5,0,Math.PI*2);ctx.arc(38,-5,5,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#ff6780';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(52,3);ctx.lineTo(70,0);ctx.moveTo(70,0);ctx.lineTo(80,-8);ctx.moveTo(70,0);ctx.lineTo(80,8);ctx.stroke(); ctx.restore(); }
+function checkEnd(){
+ if(progress>=level().need){state='won';nextBtn.disabled=false;message='RESCUED!';showToast('King Saved!',level().win,2500); for(let i=0;i<80;i++)particles.push({x:W/2,y:520,vx:Math.random()*10-5,vy:Math.random()*-9-2,life:90,c:['#ffd666','#52d3ff','#ff79cf','#72ec85'][i%4],r:Math.random()*8+4});return;}
+ if(moves<=0){state='lost';message='OUT OF MOVES';showToast('Try again',`You needed ${level().need-progress} more ${TILE[level().target].name}. Restart and focus on ${TILE[level().target].emoji}.`,2500)}
 }
-
-function collideRect(p,r,bounce){
-  const cx=clamp(p.x,r.x,r.x+r.w), cy=clamp(p.y,r.y,r.y+r.h); const dx=p.x-cx,dy=p.y-cy; const d=dx*dx+dy*dy;
-  if(d<p.r*p.r){ const len=Math.sqrt(d)||1; const nx=dx/len, ny=dy/len; p.x=cx+nx*(p.r+1); p.y=cy+ny*(p.r+1); const dot=p.vx*nx+p.vy*ny; p.vx-= (1+bounce)*dot*nx; p.vy-= (1+bounce)*dot*ny; }
-}
-function collideSegment(p,s,bounce){
-  const ca=Math.cos(s.a), sa=Math.sin(s.a); const x1=s.x-ca*s.len/2, y1=s.y-sa*s.len/2, x2=s.x+ca*s.len/2, y2=s.y+sa*s.len/2;
-  const vx=x2-x1,vy=y2-y1, wx=p.x-x1, wy=p.y-y1; const c=clamp((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1); const cx=x1+c*vx, cy=y1+c*vy;
-  const dx=p.x-cx, dy=p.y-cy; const min=p.r+s.thick/2; const d=dx*dx+dy*dy;
-  if(d<min*min){ const len=Math.sqrt(d)||1; const nx=dx/len,ny=dy/len; p.x=cx+nx*(min+1); p.y=cy+ny*(min+1); const dot=p.vx*nx+p.vy*ny; p.vx-= (1+bounce)*dot*nx; p.vy-= (1+bounce)*dot*ny; p.vx+=sa*.03; }
-}
-
-let floaters=[];
-function popText(text,x,y,color){floaters.push({text,x,y,vy:-1.5,a:1,color});}
-function makeSteam(x,y,color='#f4d6be'){ for(let i=0;i<7;i++) confetti.push({x,y,vx:rand(-2,2),vy:rand(-4,-1),r:rand(4,12),a:1,c:color}); }
-
-function drawBg(){
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3b2155');g.addColorStop(.5,'#201432');g.addColorStop(1,'#100b19');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  // stone border
-  ctx.fillStyle='#2a1a3c'; roundRect(48,56,W-96,H-112,38,true,false); ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=5; roundRect(48,56,W-96,H-112,38,false,true);
-  // decorative tile speckles
-  for(let i=0;i<24;i++){ const x=(i*137+tick*.12)%W; const y=85+((i*211)%1380); ctx.fillStyle=`rgba(255,255,255,${.025+(i%3)*.012})`; ctx.beginPath();ctx.arc(x,y,2+(i%4),0,Math.PI*2);ctx.fill(); }
-}
-function drawWalls(){
-  for(const w of walls){
-    const grd=ctx.createLinearGradient(w.x,w.y,w.x,w.y+w.h);grd.addColorStop(0,'#8b6b82');grd.addColorStop(.45,'#5b405f');grd.addColorStop(1,'#31233b');ctx.fillStyle=grd; roundRect(w.x,w.y,w.w,w.h,15,true,false);
-    ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2;roundRect(w.x+2,w.y+2,w.w-4,w.h-4,12,false,true);
-    for(let x=w.x+25;x<w.x+w.w;x+=55){ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(x,w.y+4,3,w.h-8)}
-  }
-}
-function drawPins(){
-  for(const p of pins){ if(p.removed){ continue; }
-    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); p.pulse+=.06; const glow=8+Math.sin(p.pulse)*3;
-    ctx.shadowBlur=glow;ctx.shadowColor='#ffd15a';
-    const grd=ctx.createLinearGradient(-p.len/2,0,p.len/2,0);grd.addColorStop(0,'#7a4512');grd.addColorStop(.09,'#ffed9d');grd.addColorStop(.5,'#ffc64f');grd.addColorStop(.91,'#ffed9d');grd.addColorStop(1,'#7a4512');
-    ctx.strokeStyle=grd;ctx.lineWidth=p.thick;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-p.len/2,0);ctx.lineTo(p.len/2,0);ctx.stroke();
-    ctx.fillStyle='#ffe796';ctx.strokeStyle='#7a4512';ctx.lineWidth=5;ctx.beginPath();ctx.arc(-p.len/2,0,28,0,Math.PI*2);ctx.arc(p.len/2,0,28,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#513012';ctx.font='bold 26px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✦',0,1);
-    ctx.restore();
-  }
-}
-function drawKing(){
-  ctx.save(); ctx.translate(king.x,king.y); const bob=Math.sin(tick*.08)*4;
-  ctx.shadowBlur=22; ctx.shadowColor= state==='lost'?'#ff4444':'#ffd15a';
-  // throne
-  ctx.fillStyle='#5d2a67'; roundRect(-84,12,168,120,22,true,false); ctx.fillStyle='#7b3c82'; roundRect(-68,-5,136,94,22,true,false);
-  // body/head
-  ctx.fillStyle='#6b58c8'; roundRect(-38,34+bob,76,78,26,true,false); ctx.fillStyle='#ffd3a1'; ctx.beginPath();ctx.arc(0,bob,45,0,Math.PI*2);ctx.fill();
-  // beard
-  ctx.fillStyle='#fff0d1';ctx.beginPath();ctx.ellipse(0,21+bob,37,25,0,0,Math.PI*2);ctx.fill();
-  // crown
-  ctx.fillStyle='#ffd65c';ctx.strokeStyle='#8f5d13';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-38,-31+bob);ctx.lineTo(-24,-70+bob);ctx.lineTo(-7,-36+bob);ctx.lineTo(11,-72+bob);ctx.lineTo(26,-36+bob);ctx.lineTo(40,-70+bob);ctx.lineTo(36,-31+bob);ctx.closePath();ctx.fill();ctx.stroke();
-  // face
-  ctx.fillStyle='#2c1932';ctx.beginPath();ctx.arc(-15,-3+bob,4,0,Math.PI*2);ctx.arc(15,-3+bob,4,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#9b5a55';ctx.lineWidth=3;ctx.beginPath();
-  if(state==='lost'){ctx.arc(0,17+bob,13,Math.PI,0);} else if(state==='won'){ctx.arc(0,8+bob,15,0,Math.PI);} else {ctx.arc(0,17+bob,10,Math.PI*.12,Math.PI*.88);} ctx.stroke();
-  if(king.gold>0){ctx.font='bold 30px system-ui';ctx.fillStyle='#ffd76f';ctx.fillText('×'+king.gold,45,-65+bob);}
-  ctx.restore();
-}
-function drawFloaters(){
-  for(const f of floaters){f.y+=f.vy;f.a-=.018;ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.font='900 34px system-ui';ctx.textAlign='center';ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=5;ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}
-  floaters=floaters.filter(f=>f.a>0);
-  for(const c of confetti){c.x+=c.vx;c.y+=c.vy;c.vy+=.06;c.a-=.018;ctx.globalAlpha=Math.max(0,c.a);ctx.fillStyle=c.c;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
-  confetti=confetti.filter(c=>c.a>0);
-}
-
-function update(){
-  if(state!=='playing') return;
-  tick++;
-  for(const p of particles) p.update();
-  particles=particles.filter(p=>!p.dead && p.y<H+80);
-  if(tick%30===0) checkWin();
-}
-function checkWin(){
-  const remainingLava=particles.filter(p=>p.type==='lava').length;
-  const remainingGold=particles.filter(p=>p.type==='gold').length;
-  const hasGoldGoal=levels[L].spawns.some(s=>s.type==='gold');
-  const hasSnake=levels[L].spawns.some(s=>s.type==='snake');
-  const noMovingHazards=remainingLava===0 && (!hasSnake || !snakeAlive);
-  const goldDone=!hasGoldGoal || gotGold>=Math.max(8, Math.floor(levels[L].spawns.find(s=>s.type==='gold')?.n*.35 || 0)) || remainingGold===0 && gotGold>0;
-  const allPinsGone=pins.every(p=>p.removed);
-  if(noMovingHazards && goldDone && (allPinsGone || tick>420)) win();
-}
-function win(){ if(state!=='playing')return; state='won'; king.mood='happy'; for(let i=0;i<90;i++) confetti.push({x:king.x,y:king.y-100,vx:rand(-6,6),vy:rand(-10,-2),r:rand(4,10),a:1,c:['#ffd76f','#58c7ff','#ff7ad9','#72e078'][i%4]}); showToast('King Saved!', L===levels.length-1?'You beat every rescue puzzle.':'Nice! Ready for the next trap?', 2200); }
-function lose(title,msg){ if(state!=='playing')return; state='lost'; king.alive=false; showToast(title,msg,2200); }
-function showToast(title,msg,ms){ toastTitle.textContent=title; toastText.textContent=msg; toast.classList.add('show'); clearTimeout(showToast.t); showToast.t=setTimeout(()=>toast.classList.remove('show'),ms); }
-
-function draw(){
-  update(); drawBg(); drawWalls(); drawPins(); drawKing();
-  // Sort: fluids behind, snake/gold above slightly
-  for(const p of particles) if(p.type!=='snake') p.draw();
-  for(const p of particles) if(p.type==='snake') p.draw();
-  drawFloaters();
-  // bottom hint plaque
-  ctx.save(); ctx.globalAlpha=.82; ctx.fillStyle='#130b1d'; roundRect(92,H-132,W-184,58,20,true,false); ctx.fillStyle='#fce9b9'; ctx.font='800 25px system-ui'; ctx.textAlign='center'; ctx.fillText(state==='playing'?'Tap a golden pin to pull it':state==='won'?'Saved! Press Next ▶':'Try Restart ↻',W/2,H-96); ctx.restore();
-  requestAnimationFrame(draw);
-}
-
-function roundRect(x,y,w,h,r,fill,stroke){
-  r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); if(fill)ctx.fill(); if(stroke)ctx.stroke();
-}
-
-function getPoint(evt){ const rect=canvas.getBoundingClientRect(); const t=evt.touches?evt.touches[0]:evt; return {x:(t.clientX-rect.left)*W/rect.width, y:(t.clientY-rect.top)*H/rect.height}; }
-function tap(evt){ evt.preventDefault(); if(state!=='playing'){ if(state==='lost') loadLevel(L,true); return; } const pt=getPoint(evt); for(const p of pins){ if(p.removed) continue; const ca=Math.cos(p.a),sa=Math.sin(p.a); const x1=p.x-ca*p.len/2,y1=p.y-sa*p.len/2,x2=p.x+ca*p.len/2,y2=p.y+sa*p.len/2; const vx=x2-x1,vy=y2-y1,wx=pt.x-x1,wy=pt.y-y1; const c=clamp((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1); const cx=x1+c*vx,cy=y1+c*vy; if(dist2(pt.x,pt.y,cx,cy)<2500){ p.removed=true; for(let i=0;i<16;i++) confetti.push({x:pt.x,y:pt.y,vx:rand(-4,4),vy:rand(-6,1),r:rand(3,7),a:1,c:'#ffd76f'}); checkWin(); return; }} }
+function shuffleBoard(show=true){for(let r=0;r<N;r++)for(let c=0;c<N;c++)board[r][c]=randType(); if(show)pulseText('Shuffled!',W/2,boardY-28,'#fff0c6')}
+function tileAt(x,y){const bx=x-boardX,by=y-boardY; if(bx<0||by<0)return null; const c=Math.floor(bx/(cell+gap)),r=Math.floor(by/(cell+gap)); if(r<0||c<0||r>=N||c>=N)return null; const lx=bx-c*(cell+gap),ly=by-r*(cell+gap); if(lx>cell||ly>cell)return null; return {r,c}}
+function tileCX(c){return boardX+c*(cell+gap)+cell/2} function tileCY(r){return boardY+r*(cell+gap)+cell/2}
+function pointer(evt){const rect=canvas.getBoundingClientRect(),t=evt.touches?evt.touches[0]:evt;return{x:(t.clientX-rect.left)*W/rect.width,y:(t.clientY-rect.top)*H/rect.height}}
+function tap(evt){evt.preventDefault(); if(state==='lost'){startLevel(L);return} const p=pointer(evt),tc=tileAt(p.x,p.y); if(!tc)return; if(!selected){selected=tc;return} doSwap(selected,tc)}
 canvas.addEventListener('mousedown',tap); canvas.addEventListener('touchstart',tap,{passive:false});
-window.addEventListener('keydown',e=>{ if(e.key==='r'||e.key==='R')loadLevel(L,true); if(e.key==='n'||e.key==='N')loadLevel((L+1)%levels.length,true); });
-loadLevel(0,true); draw();
+resetBtn.onclick=()=>startLevel(L); shuffleBtn.onclick=()=>{if(state==='playing'){moves=Math.max(0,moves-1);shuffleBoard();updateHud();checkEnd()}}; nextBtn.onclick=()=>{if(state==='won')startLevel((L+1)%levels.length)};
+
+function round(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function draw(){ctx.clearRect(0,0,W,H);drawBackground();drawScene();drawBoard();drawFX();requestAnimationFrame(draw)}
+function drawBackground(){
+ let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#5b48ad');g.addColorStop(.38,'#2a1a55');g.addColorStop(1,'#110a22');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle='rgba(255,255,255,.04)';for(let i=0;i<40;i++){ctx.beginPath();ctx.arc((i*97)%W,80+((i*173)%1360),2+(i%5),0,7);ctx.fill()}
+}
+function drawScene(){
+ const lv=level();
+ // Stage frame
+ ctx.save();ctx.translate(70,82);ctx.fillStyle='#201236';round(0,0,760,760,42);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=5;ctx.stroke();
+ // stone chamber
+ ctx.fillStyle='#5c4a69';round(42,84,676,610,30);ctx.fill();ctx.fillStyle='#2a2037';round(70,116,620,548,24);ctx.fill();
+ const fill=progress/lv.need;
+ if(lv.scene==='lava')drawLavaScene(fill); if(lv.scene==='fire')drawFireScene(fill); if(lv.scene==='ice')drawIceScene(fill); if(lv.scene==='flood')drawFloodScene(fill); if(lv.scene==='dragon')drawDragonScene(fill);
+ drawKing(380,455,fill);
+ // objective meter
+ ctx.fillStyle='rgba(0,0,0,.45)';round(70,704,620,36,18);ctx.fill();ctx.fillStyle=TILE[lv.target].c;round(74,708,612*fill,28,14);ctx.fill();ctx.fillStyle='#fff6d2';ctx.font='900 25px system-ui';ctx.textAlign='center';ctx.fillText(lv.objective,380,62);
+ if(message){ctx.font='950 58px system-ui';ctx.lineWidth=8;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.fillStyle=state==='won'?'#ffe166':'#ff6b58';ctx.strokeText(message,380,365);ctx.fillText(message,380,365)}
+ ctx.restore();
+}
+function drawLavaScene(fill){
+ const waterH=240*fill,lavaH=260*(1-fill);
+ ctx.fillStyle='#31142b';round(115,200,530,360,24);ctx.fill();
+ let lg=ctx.createLinearGradient(0,560-lavaH,0,560);lg.addColorStop(0,'#ff9d3a');lg.addColorStop(.55,'#ff4932');lg.addColorStop(1,'#8f1125');ctx.fillStyle=lg;round(115,560-lavaH,530,lavaH,18);ctx.fill();
+ ctx.fillStyle='rgba(255,226,94,.9)';for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(145+i*65+Math.sin(Date.now()/300+i)*10,535-lavaH*.4,8,0,7);ctx.fill()}
+ let wg=ctx.createLinearGradient(0,560-waterH,0,560);wg.addColorStop(0,'rgba(154,239,255,.92)');wg.addColorStop(1,'rgba(26,122,230,.92)');ctx.fillStyle=wg;round(115,560-waterH,530,waterH,18);ctx.fill();
+ ctx.fillStyle='#6a4c3c';round(260,455,240,52,18);ctx.fill();
+ ctx.strokeStyle='#6be7ff';ctx.lineWidth=16;ctx.beginPath();ctx.moveTo(118,185);ctx.lineTo(245,185);ctx.lineTo(245,250);ctx.stroke(); if(fill>0){ctx.strokeStyle='#68d8ff';ctx.lineWidth=22;ctx.beginPath();ctx.moveTo(245,250);ctx.lineTo(245,360);ctx.stroke();}
+}
+function drawFireScene(fill){
+ ctx.fillStyle='#533025';round(100,170,560,410,26);ctx.fill();ctx.fillStyle='#74472d';round(140,460,480,70,20);ctx.fill();
+ const flames=Math.ceil(10*(1-fill)); for(let i=0;i<flames;i++)drawFlame(130+i*55,455+Math.sin(Date.now()/150+i)*8,52);
+ if(fill>0){ctx.fillStyle='rgba(77,204,255,.35)';round(110,210,540,300*fill,22);ctx.fill();ctx.font='80px system-ui';ctx.fillText('💦',540,250+fill*220)}
+ ctx.fillStyle='#b8763a';round(215,508,330,45,14);ctx.fill();
+}
+function drawIceScene(fill){
+ ctx.fillStyle='#16305a';round(100,170,560,410,26);ctx.fill();
+ ctx.fillStyle=`rgba(160,237,255,${.78*(1-fill)})`;round(190,285,380,260,28);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=5;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(210+i*70,300);ctx.lineTo(260+i*55,530);ctx.stroke()}
+ if(fill>0){for(let i=0;i<6;i++)drawFlame(150+i*86,550,44*fill)}
+ ctx.fillStyle='#76513a';round(215,508,330,45,14);ctx.fill();
+}
+function drawFloodScene(fill){
+ const water=290*(1-fill);ctx.fillStyle='#21324d';round(100,170,560,410,26);ctx.fill();ctx.fillStyle='rgba(61,190,255,.74)';round(100,580-water,560,water,26);ctx.fill();
+ ctx.fillStyle='#5a3328';round(255,465,250,60,16);ctx.fill();ctx.fillStyle='#27202d';round(560,360,55,190,14);ctx.fill();ctx.fillStyle=fill>.8?'#59e584':'#d03b46';ctx.beginPath();ctx.arc(588,455,20,0,7);ctx.fill();
+}
+function drawDragonScene(fill){
+ ctx.fillStyle='#2d2236';round(100,170,560,410,26);ctx.fill();ctx.fillStyle='#6c2a27';round(480,310,150,130,38);ctx.fill();ctx.font='86px system-ui';ctx.fillText('🐉',545,382);drawFlame(465,445,64*(1-fill));
+ ctx.fillStyle='#5b3b2d';round(145,515,210+290*fill,42,16);ctx.fill();ctx.strokeStyle='#d8b077';ctx.lineWidth=6;for(let i=0;i<7*fill;i++){ctx.beginPath();ctx.moveTo(160+i*50,512);ctx.lineTo(160+i*50,562);ctx.stroke()}
+}
+function drawFlame(x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s/60,s/60);ctx.fillStyle='#ff4a32';ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(-38,-35,-12,-70,0,-105);ctx.bezierCurveTo(18,-65,48,-38,0,0);ctx.fill();ctx.fillStyle='#ffd15a';ctx.beginPath();ctx.moveTo(0,-8);ctx.bezierCurveTo(-19,-32,-4,-50,8,-75);ctx.bezierCurveTo(20,-46,30,-25,0,-8);ctx.fill();ctx.restore()}
+function drawKing(x,y,fill){
+ ctx.save();ctx.translate(x,y+Math.sin(Date.now()/250)*4);ctx.shadowBlur=20;ctx.shadowColor='#ffd45e';
+ ctx.fillStyle='#6841a2';round(-56,36,112,118,24);ctx.fill();ctx.fillStyle='#ffd0a1';ctx.beginPath();ctx.arc(0,0,52,0,7);ctx.fill();ctx.fillStyle='#fff2d1';ctx.beginPath();ctx.ellipse(0,30,41,27,0,0,7);ctx.fill();
+ ctx.fillStyle='#ffd45e';ctx.strokeStyle='#8a5a15';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-45,-36);ctx.lineTo(-29,-82);ctx.lineTo(-8,-44);ctx.lineTo(12,-84);ctx.lineTo(31,-44);ctx.lineTo(47,-82);ctx.lineTo(42,-36);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.fillStyle='#26142d';ctx.beginPath();ctx.arc(-18,-8,5,0,7);ctx.arc(18,-8,5,0,7);ctx.fill();ctx.strokeStyle='#9b5a55';ctx.lineWidth=4;ctx.beginPath(); if(state==='won'||fill>.98)ctx.arc(0,12,18,0,Math.PI);else ctx.arc(0,24,14,Math.PI,0);ctx.stroke();
+ ctx.restore();
+}
+function drawBoard(){
+ ctx.save();ctx.fillStyle='rgba(10,6,22,.64)';round(boardX-18,boardY-18,N*cell+(N-1)*gap+36,N*cell+(N-1)*gap+36,30);ctx.fill();
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++){const x=boardX+c*(cell+gap),y=boardY+r*(cell+gap),t=board[r][c];ctx.fillStyle='#3a2964';round(x,y,cell,cell,18);ctx.fill();ctx.fillStyle=t?TILE[t].c:'#201436';ctx.globalAlpha=.32;round(x+7,y+7,cell-14,cell-14,15);ctx.fill();ctx.globalAlpha=1;if(selected&&selected.r===r&&selected.c===c){ctx.strokeStyle='#ffe166';ctx.lineWidth=7;round(x-3,y-3,cell+6,cell+6,20);ctx.stroke()} if(t){ctx.font='46px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(TILE[t].emoji,x+cell/2,y+cell/2+2)}}
+ ctx.restore();
+}
+function burst(x,y,c,e){for(let i=0;i<8;i++)particles.push({x,y,vx:Math.random()*8-4,vy:Math.random()*-7-1,life:35,c,r:Math.random()*6+3,e:i===0?e:null})}
+function pourEffect(n){for(let i=0;i<n*2;i++)particles.push({x:235+Math.random()*40,y:280,vx:Math.random()*2-1,vy:Math.random()*8+4,life:45,c:TILE[level().target].c,r:Math.random()*5+4})}
+function pulseText(text,x,y,c){comboText.push({text,x,y,c,life:55})}
+function drawFX(){
+ for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.life--;ctx.globalAlpha=Math.max(0,p.life/50);if(p.e){ctx.font='30px system-ui';ctx.fillText(p.e,p.x,p.y)}else{ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}ctx.globalAlpha=1}
+ particles=particles.filter(p=>p.life>0);
+ for(const t of comboText){t.y-=1.4;t.life--;ctx.globalAlpha=Math.max(0,t.life/55);ctx.font='950 34px system-ui';ctx.textAlign='center';ctx.strokeStyle='rgba(0,0,0,.55)';ctx.lineWidth=6;ctx.fillStyle=t.c;ctx.strokeText(t.text,t.x,t.y);ctx.fillText(t.text,t.x,t.y);ctx.globalAlpha=1}
+ comboText=comboText.filter(t=>t.life>0)
+}
+window.__gameTest={complete:()=>{progress=level().need;checkEnd();updateHud()},level:()=>({L,state,progress,need:level().need,moves}),startLevel};
+startLevel(0);draw();
 })();
 </script>
 </body>
