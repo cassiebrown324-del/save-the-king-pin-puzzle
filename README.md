@@ -1,26 +1,22 @@
 # Save the King — Match Rescue
 
-A playable match-3 rescue game with five distinct rescue scenes and kid-friendly arcade rewards.
+A playable match-3 rescue game inspired by Royal Match / King's Nightmare rescue ads.
 
 ## Play
 
 https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.html
 
-## Big fun update
+## Latest improvements
 
-I dogfooded this with a “would a 12-year-old keep playing?” lens and added longer-session hooks:
+- Added real swipe/drag swapping. You can now swipe from one tile to an adjacent tile like a normal match-3 game.
+- Removed idle real-time danger growth; danger now changes from moves/matches, so the game feels less glitchy and less unfair.
+- Improved rescue-scene graphics with glossier hero panels and more readable ad-like props.
+- Lava level now shows chains and a platform over animated lava.
+- Flood level now shows a door/drain lock and water chamber.
+- Fire level now has kitchen props and bigger water splashes.
+- Ice level now has extra snowflake/freeze staging.
+- Still has distinct board shapes, move limits, coins, stars, fever bonus, and blast matches.
 
-- 🪙 coins earned from every match
-- ⭐ 1–3 star level rating based on moves left
-- FEVER BONUS meter for streaks and big matches
-- BLAST MATCH reward for 4+ matches, with screen shake and extra tile clears
-- Bigger win celebration and clearer match feedback
-- Persistent score/coins/stars display
+## Controls
 
-## Levels
-
-1. **Lava Drop** — WIDE CAVE board, match 🪢 ROPE tiles.
-2. **Flooded Cellar** — HOURGLASS board, match 🔑 KEY tiles.
-3. **Kitchen Fire** — DIAMOND board, match 💧 WATER tiles.
-4. **Frozen Throne** — ICE CROSS board, match 🔥 FIRE tiles.
-5. **Dragon Bridge** — BROKEN BRIDGE board, match 🔨 HAMMER tiles.
+Swipe/drag adjacent tiles, or tap two adjacent tiles.
