@@ -46,27 +46,28 @@ const TYPES=[
   {id:5,key:'shield',name:'SHIELD',emoji:'🛡️',c1:'#cbb7ff',c2:'#6e42e8'}
 ];
 const levels=[
-  {name:'Lava Drop', scene:'lava', target:72, fall:2.2, hazard:1.7, special:1, objective:'Match 🪢 ROPE tiles to pull him up', intro:'Level 1: the king is dangling over lava. Match any 3 tiles, but 🪢 ROPE matches pull him up the most.'},
-  {name:'Flooded Cellar', scene:'flood', target:88, fall:2.5, hazard:2.0, special:3, objective:'Match 🔑 KEY tiles to open the drain', intro:'Level 2: water is rising around the king. Match 🔑 KEY tiles to open the drain gate.'},
-  {name:'Kitchen Fire', scene:'fire', target:102, fall:2.8, hazard:2.1, special:0, objective:'Match 💧 WATER tiles to put out fire', intro:'Level 3: the kitchen is burning. Match 💧 WATER tiles to spray the fire out.'},
-  {name:'Frozen Throne', scene:'ice', target:116, fall:3.0, hazard:2.2, special:2, objective:'Match 🔥 FIRE tiles to melt the ice', intro:'Level 4: the king is trapped in ice. Match 🔥 FIRE tiles to melt him free.'},
-  {name:'Dragon Bridge', scene:'dragon', target:132, fall:3.2, hazard:2.4, special:4, objective:'Match 🔨 HAMMER tiles to build the bridge', intro:'Final Level: a dragon broke the bridge. Match 🔨 HAMMER tiles to rebuild the escape path.'}
+  {name:'Lava Drop', scene:'lava', target:180, moves:18, fall:3.4, hazard:2.7, special:1, objective:'Match 🪢 ROPE tiles to pull him up', intro:'Level 1: 18 moves. Match 🪢 ROPE tiles for the biggest pull.'},
+  {name:'Flooded Cellar', scene:'flood', target:230, moves:20, fall:4.3, hazard:3.5, special:3, objective:'Match 🔑 KEY tiles to open the drain', intro:'Level 2: 20 moves. Water rises faster, so prioritize 🔑 KEY matches.'},
+  {name:'Kitchen Fire', scene:'fire', target:280, moves:21, fall:4.9, hazard:4.0, special:0, objective:'Match 💧 WATER tiles to put out fire', intro:'Level 3: 21 moves. The fire spreads quickly — bigger combos matter.'},
+  {name:'Frozen Throne', scene:'ice', target:330, moves:22, fall:5.6, hazard:4.5, special:2, objective:'Match 🔥 FIRE tiles to melt the ice', intro:'Level 4: 22 moves. Fewer easy openings; chain 🔥 FIRE matches.'},
+  {name:'Dragon Bridge', scene:'dragon', target:400, moves:24, fall:6.2, hazard:5.0, special:4, objective:'Match 🔨 HAMMER tiles to build the bridge', intro:'Final Level: 24 moves. The dragon is fast — build combos with 🔨 HAMMER tiles.'}
 ];
-let grid=[], selected=null, swapping=false, particles=[], floaters=[], state='play', level=0, score=0, progress=0, danger=18, hazard=0, time=0, combo=0, specialFlash=0;
+let grid=[], selected=null, swapping=false, particles=[], floaters=[], state='play', level=0, score=0, progress=0, danger=18, hazard=0, time=0, combo=0, specialFlash=0, moves=0;
 const levelPill=document.getElementById('levelPill'), goalPill=document.getElementById('goalPill'), toast=document.getElementById('toast'), toastTitle=document.getElementById('toastTitle'), toastText=document.getElementById('toastText'), nextBtn=document.getElementById('next');
 document.getElementById('restart').onclick=()=>start(level,true);
 nextBtn.onclick=()=>{ if(state==='won') start((level+1)%levels.length,true); else showToast('Finish this rescue','Fill the rescue meter first, then Next unlocks.',1000); };
 function rand(n){return Math.floor(Math.random()*n)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function round(x,y,w,h,r,fill,stroke){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke()}
-function start(l=0,intro=false){level=l; grid=[]; selected=null; swapping=false; particles=[]; floaters=[]; state='play'; score=0; progress=0; danger=18; hazard=8; time=0; combo=0; specialFlash=0; nextBtn.disabled=true;
+function start(l=0,intro=false){level=l; grid=[]; selected=null; swapping=false; particles=[]; floaters=[]; state='play'; score=0; progress=0; danger=level===0?18:28+level*5; hazard=level===0?8:18+level*6; time=0; combo=0; specialFlash=0; moves=levels[level].moves; nextBtn.disabled=true;
   for(let r=0;r<ROWS;r++){grid[r]=[];for(let c=0;c<COLS;c++){let t; do{t=rand(TYPES.length)}while((c>=2&&grid[r][c-1].type===t&&grid[r][c-2].type===t)||(r>=2&&grid[r-1][c].type===t&&grid[r-2][c].type===t)); grid[r][c]=tile(t,c,r);}}
-  // Every level starts with an obvious match for that level's goal tile: swap bottom row col 2 upward.
+  // Level 1 has a tutorial match. Later levels require more hunting.
   const s=levels[level].special;
-  grid[6][0].type=s; grid[6][1].type=s; grid[6][2].type=(s+2)%TYPES.length; grid[5][2].type=s;
-  // Also seed a water rescue on lava/fire levels and a rope match on the side.
-  grid[4][4].type=1; grid[5][4].type=1; grid[6][4].type=5; grid[6][5].type=1;
-  if(levels[level].scene==='lava'||levels[level].scene==='fire'){grid[3][0].type=0;grid[3][1].type=0;grid[4][1].type=0;}
+  if(level===0){grid[6][0].type=s; grid[6][1].type=s; grid[6][2].type=(s+2)%TYPES.length; grid[5][2].type=s;}
+  else if(level===1){grid[6][0].type=s; grid[6][1].type=(s+2)%TYPES.length; grid[5][1].type=s; grid[4][2].type=s;}
+  // Also seed one side rope helper on early levels; later levels are less generous.
+  if(level<2){grid[4][4].type=1; grid[5][4].type=1; grid[6][4].type=5; grid[6][5].type=1;}
+  if(levels[level].scene==='lava'||levels[level].scene==='fire'){grid[3][0].type=0;grid[3][1].type=0;if(level===0)grid[4][1].type=0;}
   levelPill.textContent=`👑 Level ${level+1}/5 — ${levels[level].name}`;
   goalPill.textContent=levels[level].objective;
   if(intro) showToast(levels[level].name, levels[level].intro, 2600);
@@ -76,18 +77,18 @@ function showToast(t,m,ms=1300){toastTitle.textContent=t;toastText.textContent=m
 function screenToGrid(evt){const rect=canvas.getBoundingClientRect(), e=evt.touches?evt.touches[0]:evt; const x=(e.clientX-rect.left)*W/rect.width, y=(e.clientY-rect.top)*H/rect.height; const c=Math.floor((x-GRID_X)/(CELL+GAP)), r=Math.floor((y-GRID_Y)/(CELL+GAP)); if(c<0||c>=COLS||r<0||r>=ROWS)return null; const lx=x-(GRID_X+c*(CELL+GAP)), ly=y-(GRID_Y+r*(CELL+GAP)); if(lx>CELL||ly>CELL)return null; return {c,r};}
 function tap(evt){evt.preventDefault(); if(state==='lost'){start(level,true);return} if(state==='won'){start((level+1)%levels.length,true);return} if(swapping)return; const p=screenToGrid(evt); if(!p)return; if(!selected){selected=p;return} const d=Math.abs(selected.c-p.c)+Math.abs(selected.r-p.r); if(d===0){selected=null;return} if(d===1){swap(selected,p,true); selected=null;} else selected=p;}
 canvas.addEventListener('mousedown',tap); canvas.addEventListener('touchstart',tap,{passive:false});
-function swap(a,b,player){const A=grid[a.r][a.c],B=grid[b.r][b.c]; grid[a.r][a.c]=B; grid[b.r][b.c]=A; [A.c,A.r,B.c,B.r]=[b.c,b.r,a.c,a.r]; A.tx=GRID_X+A.c*(CELL+GAP);A.ty=GRID_Y+A.r*(CELL+GAP);B.tx=GRID_X+B.c*(CELL+GAP);B.ty=GRID_Y+B.r*(CELL+GAP); swapping=true; setTimeout(()=>{const groups=findMatches(); if(groups.length){resolve(groups,player)} else { if(player){danger=clamp(danger-1.2,0,96); pop('tiny pull',W/2,830,'#fff1a8');} if(player) swap(b,a,false); swapping=false; }},160);}
+function swap(a,b,player){const A=grid[a.r][a.c],B=grid[b.r][b.c]; grid[a.r][a.c]=B; grid[b.r][b.c]=A; [A.c,A.r,B.c,B.r]=[b.c,b.r,a.c,a.r]; A.tx=GRID_X+A.c*(CELL+GAP);A.ty=GRID_Y+A.r*(CELL+GAP);B.tx=GRID_X+B.c*(CELL+GAP);B.ty=GRID_Y+B.r*(CELL+GAP); swapping=true; if(player) moves--; setTimeout(()=>{const groups=findMatches(); if(groups.length){resolve(groups,player)} else {  if(player){danger=clamp(danger+4+level*2,0,99); hazard=clamp(hazard+3+level,0,100); pop('bad swap!',W/2,830,'#ff9a76');}if(player) swap(b,a,false); swapping=false; if(player) checkLoseByMoves(); }},160);}
 function findMatches(){const groups=[]; for(let r=0;r<ROWS;r++){let run=[grid[r][0]]; for(let c=1;c<COLS;c++){if(grid[r][c].type===run[0].type)run.push(grid[r][c]);else{if(run.length>=3)groups.push([...run]);run=[grid[r][c]]}} if(run.length>=3)groups.push([...run]);}
   for(let c=0;c<COLS;c++){let run=[grid[0][c]]; for(let r=1;r<ROWS;r++){if(grid[r][c].type===run[0].type)run.push(grid[r][c]);else{if(run.length>=3)groups.push([...run]);run=[grid[r][c]]}} if(run.length>=3)groups.push([...run]);}
   return groups;
 }
 function resolve(groups,player){combo++; let seen=new Set(), counts=Array(TYPES.length).fill(0), power=0, bestGroup=0; for(const g of groups){power+=g.length; bestGroup=Math.max(bestGroup,g.length); for(const t of g){const k=t.r+','+t.c; if(seen.has(k))continue; seen.add(k); t.dead=true; t.pop=1; counts[t.type]++; burst(t.x+CELL/2,t.y+CELL/2,TYPES[t.type].c1,t.type===levels[level].special?16:8,t.type===levels[level].special);}}
   const specialCount=counts[levels[level].special], water=counts[0], rope=counts[1];
-  const bigBonus=bestGroup>=4?12:0;
-  const gain=power*4+combo*3+specialCount*11+rope*5+bigBonus;
+  const bigBonus=bestGroup>=4?8:0;
+  const gain=power*3+combo*2+specialCount*8+rope*3+bigBonus;
   progress=clamp(progress+gain,0,levels[level].target);
-  danger=clamp(danger-(power*2.6+specialCount*7+rope*4+bigBonus),0,98);
-  hazard=clamp(hazard+levels[level].hazard*.08-water*4-specialCount*3,0,100);
+  danger=clamp(danger-(power*1.6+specialCount*4.2+rope*2.5+bigBonus),0,98);
+  hazard=clamp(hazard+levels[level].hazard*.16-water*2.6-specialCount*1.9,0,100);
   score+=gain*10;
   let label=`+${gain} rescue`;
   if(bestGroup>=4) label=`BIG MATCH! +${gain}`;
@@ -98,9 +99,10 @@ function resolve(groups,player){combo++; let seen=new Set(), counts=Array(TYPES.
   setTimeout(()=>collapse(),220);
 }
 function collapse(){for(let c=0;c<COLS;c++){let write=ROWS-1; for(let r=ROWS-1;r>=0;r--){if(!grid[r][c].dead){const t=grid[r][c]; grid[write][c]=t; t.r=write;t.c=c;t.tx=GRID_X+c*(CELL+GAP);t.ty=GRID_Y+write*(CELL+GAP); write--;}} for(let r=write;r>=0;r--){const t=tile(rand(TYPES.length),c,r); t.y=GRID_Y-(write-r+1)*(CELL+GAP); grid[r][c]=t;}}
-  setTimeout(()=>{const g=findMatches(); if(g.length) resolve(g,false); else {swapping=false; combo=0; checkWin();}},230);
+  setTimeout(()=>{const g=findMatches(); if(g.length) resolve(g,false); else {swapping=false; combo=0; checkWin(); checkLoseByMoves();}},230);
 }
 function checkWin(){if(progress>=levels[level].target && state==='play'){state='won'; nextBtn.disabled=false; for(let i=0;i<100;i++)burst(W/2,250,['#ffd45f','#56d7ff','#ff7aa8','#9cff92'][i%4],1,true); showToast('King Saved!', level===levels.length-1?'You cleared all 5 different rescues!':'Next unlocked — new rescue scene ahead.',2200)}}
+function checkLoseByMoves(){if(state==='play'&&moves<=0&&progress<levels[level].target){state='lost';showToast('Out of moves!', 'Restart and focus on the glowing GOAL tiles.', 2400)}}
 function lose(){if(state!=='play')return; state='lost'; showToast('Oh no!', 'Tap anywhere or Restart to try again.', 2400)}
 function pop(text,x,y,color){floaters.push({text,x,y,vy:-1.55,a:1,color})}
 function burst(x,y,color,n=8,wide=false){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*(wide?12:6),vy:(Math.random()-.85)*(wide?12:7),r:3+Math.random()*7,a:1,c:color})}
@@ -143,8 +145,8 @@ function drawGrid(){ctx.fillStyle='#10091bdd';round(64,854,772,730,34,true,false
     if(sel){ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([8,6]);round(-CELL/2-5,-CELL/2-5,CELL+10,CELL+10,24,false,true);ctx.setLineDash([])}ctx.restore();}
 }
 function drawFX(){if(specialFlash>0){ctx.save();ctx.globalAlpha=specialFlash*.26;ctx.fillStyle=TYPES[levels[level].special].c1;ctx.fillRect(0,0,W,H);ctx.globalAlpha=specialFlash;ctx.strokeStyle='#fff4a0';ctx.lineWidth=10;round(78,866,744,704,28,false,true);ctx.restore();}for(const p of particles){ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}ctx.globalAlpha=1;for(const f of floaters){ctx.save();ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.color;ctx.strokeStyle='#0008';ctx.lineWidth=5;ctx.font='900 30px system-ui';ctx.textAlign='center';ctx.strokeText(f.text,f.x,f.y);ctx.fillText(f.text,f.x,f.y);ctx.restore();}}
-let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);drawScene();drawGrid();drawFX();ctx.fillStyle='#fce8b8';ctx.font='800 23px system-ui';ctx.textAlign='center';ctx.fillText(`Score ${score}  •  Tap adjacent tiles to swap`,W/2,833);requestAnimationFrame(loop)}
-window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,scene:levels[level].scene,special:levels[level].special,progress,danger,nextDisabled:nextBtn.disabled,grid:grid.map(row=>row.map(t=>t.type))})};
+let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);ctx.clearRect(0,0,W,H);drawScene();drawGrid();drawFX();ctx.fillStyle='#fce8b8';ctx.font='800 23px system-ui';ctx.textAlign='center';ctx.fillText(`Moves ${moves}  •  Score ${score}  •  Tap adjacent tiles to swap`,W/2,833);requestAnimationFrame(loop)}
+window.__gameTest={start,findMatches,swap,forceWin:()=>{progress=levels[level].target;checkWin();},getState:()=>({state,level,levels:levels.length,scene:levels[level].scene,special:levels[level].special,target:levels[level].target,moves,progress,danger,hazard,nextDisabled:nextBtn.disabled,grid:grid.map(row=>row.map(t=>t.type))})};
 start(0,true); requestAnimationFrame(loop);
 })();
 </script>
