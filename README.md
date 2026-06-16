@@ -8,6 +8,7 @@ https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.h
 
 ## Latest improvements
 
+- Level 4 (Frozen Throne) now has a distinct ice-seal mechanic: melt 4 visible 🧊 seals with 🔥 FIRE matches before the king can be saved.
 - Added real swipe/drag swapping. You can now swipe from one tile to an adjacent tile like a normal match-3 game.
 - Removed idle real-time danger growth; danger now changes from moves/matches, so the game feels less glitchy and less unfair.
 - Improved rescue-scene graphics with glossier hero panels and more readable ad-like props.
