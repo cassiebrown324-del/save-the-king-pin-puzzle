@@ -8,6 +8,7 @@ https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.h
 
 ## Latest improvements
 
+- Level 2 (Flooded Cellar) now has a distinct drain-valve mechanic: open 3 visible valves with 🔑 KEY matches before the cellar can fully empty.
 - Level 5 (Dragon Bridge) now has a distinct bridge-repair mechanic: repair 3 visible burning planks with 🔨 HAMMER matches before the king can cross safely.
 - Level 4 (Frozen Throne) has a distinct ice-seal mechanic: melt 4 visible 🧊 seals with 🔥 FIRE matches before the king can be saved.
 - Added real swipe/drag swapping. You can now swipe from one tile to an adjacent tile like a normal match-3 game.
