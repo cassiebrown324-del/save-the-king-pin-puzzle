@@ -1,25 +1,26 @@
-# Save the King — Match Rescue
+# Save the King — Royal Rescue Match
 
-A playable match-3 rescue game inspired by Royal Match / King's Nightmare rescue ads.
+Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare rescue ads.
 
 ## Play
 
-https://raw.githack.com/cassiebrown324-del/save-the-king-pin-puzzle/main/index.html
+- GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
+- Cache-busted/raw build links are provided after each commit.
 
-## Latest improvements
+## June 23 huge upgrade
 
-- Level 2 (Flooded Cellar) now has a distinct drain-valve mechanic: open 3 visible valves with 🔑 KEY matches before the cellar can fully empty.
-- Level 5 (Dragon Bridge) now has a distinct bridge-repair mechanic: repair 3 visible burning planks with 🔨 HAMMER matches before the king can cross safely.
-- Level 4 (Frozen Throne) has a distinct ice-seal mechanic: melt 4 visible 🧊 seals with 🔥 FIRE matches before the king can be saved.
-- Added real swipe/drag swapping. You can now swipe from one tile to an adjacent tile like a normal match-3 game.
-- Removed idle real-time danger growth; danger now changes from moves/matches, so the game feels less glitchy and less unfair.
-- Improved rescue-scene graphics with glossier hero panels and more readable ad-like props.
-- Lava level now shows chains and a platform over animated lava.
-- Flood level now shows a door/drain lock and water chamber.
-- Fire level now has kitchen props and bigger water splashes.
-- Ice level now has extra snowflake/freeze staging.
-- Still has distinct board shapes, move limits, coins, stars, fever bonus, and blast matches.
+This is no longer just a thin match-3 board. The latest build adds a fuller playable ad-game campaign:
+
+- 8 distinct rescue levels: Lava Drop, Flooded Cellar, Kitchen Fire, Frozen Throne, Dragon Bridge, Snake Pit, Saw Trap, and Tower Crush.
+- A level map with unlock progression and saved stars via `localStorage`.
+- Scene-specific visible danger panels: lava, rising floodwater, stove fires, ice prison, dragon bridge, snakes, saw gears, and crushing ceiling pins.
+- Real level-specific objectives with visible locks/counters, not just renamed levels.
+- Match-4 and match-5 power-ups: row/column rockets and rainbow-style clears.
+- Breakable blockers: crates, ice, vines, and metal/gear blockers.
+- Distinct board shapes with holes/obstacles per level.
+- Stronger feedback: screen shake, particles, goal flashes, floating scoring text, coins, stars, danger meter, and rescue meter.
+- `window.__gameTest` hook for smoke verification of levels, power-ups, map, and force-win progression.
 
 ## Controls
 
-Swipe/drag adjacent tiles, or tap two adjacent tiles.
+Swipe/drag adjacent tiles, or tap two adjacent tiles. Match glowing GOAL tiles to complete each rescue objective before the danger reaches the king.
