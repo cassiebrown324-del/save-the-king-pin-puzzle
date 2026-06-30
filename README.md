@@ -7,6 +7,19 @@ Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare res
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
+## June 30 hazard-surge gameplay push
+
+This scheduled pass makes the 10-level campaign feel more dynamic and less like renamed versions of the same board:
+
+- Added a visible **hazard-surge system** to every rescue scene.
+- Each level now displays a warning banner that counts down to the next danger escalation.
+- Hazards push back in level-specific ways: lava throws rubble, flood pressure can reseal valves, stoves reignite, frost spreads, dragon/saws/ceiling/bees/boulders add pressure.
+- Added in-scene animated prop states for locks and hazards so the king-in-danger fantasy is more obvious at a glance.
+- Added `window.__gameTest.forceSurge()` and `hasHazardSurge` for smoke verification.
+- Kept the larger 10-level campaign, map progression, objective cards, blockers, power-up visuals, and force-win test hook intact.
+
+Reference inspiration: Royal Match / King's Nightmare rescue examples where the strongest ad scenes are not just static match-3 boards, but escalating peril moments like dragon escapes, kitchen fires, flood rescues, and visible trap pressure.
+
 ## June 28 published campaign push
 
 This pass publishes the larger ad-style rescue campaign build so the playable link reflects a substantial upgrade, not just local edits:
@@ -49,4 +62,4 @@ This is no longer just a thin match-3 board. The latest build adds a fuller play
 
 ## Controls
 
-Swipe/drag adjacent tiles, or tap two adjacent tiles. Match glowing GOAL tiles to complete each rescue objective before the danger reaches the king.
+Tap two adjacent tiles to swap. Match glowing GOAL tiles to complete each rescue objective before the danger reaches the king. Watch the warning banner: every few moves the current hazard surges and changes the board or re-locks part of the rescue path.
