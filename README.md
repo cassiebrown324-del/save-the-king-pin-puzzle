@@ -7,18 +7,15 @@ Playable match-3 rescue prototype inspired by Royal Match / King’s Nightmare r
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
-## July 6 huge campaign upgrade
+## July 7 late-game peril expansion
 
-This scheduled pass makes the prototype feel more substantial:
+This scheduled pass adds a more visible late-campaign ramp inspired by Royal Match / King’s Nightmare ads where the king is trapped in a single obvious peril scene with clear move pressure:
 
-- Expanded the playable campaign to **12 distinct rescue levels**.
-- Added two new late-game rescue fantasies: **Ghost Library** and **Whirlpool Harbor**.
-- Reworked each scene around obvious ad-style beats: king in danger, goals cleared, trap opened, escape ready.
-- Preserved functional rescue systems: match-4 rockets, match-5 rainbow clears, hazard surges, one-use Royal Tools, locked rescue panels, blockers, map progression, and stars.
-- Added safer late-game board layouts so new levels have different hole patterns instead of feeling like label swaps.
-- `window.__gameTest` reports 12 levels, `hasCampaignExpansion`, `hasFunctionalPowerUps`, `hasRoyalTools`, `hasHazardSurge`, and `hasCinematicMission` for hosted smoke checks.
-
-Reference inspiration: Royal Match / King’s Nightmare ads work best when each scene is a new peril fantasy — flooding, fire, dragon traps, haunted rooms, whirlpools, falling hazards — with the king visibly trapped and the rescue steps immediately obvious.
+- Expanded the campaign from **12 to 14 rescue levels**.
+- Added **Mummy Tomb**, a sand-filling chamber with tomb seals, metal blockers, keys, and hammers.
+- Added **Storm Balcony**, a lightning-tower rescue with rope conductors, shield goals, vine blockers, and charged rods.
+- Added new sand and storm danger visuals so the final levels do not feel like relabeled earlier boards.
+- `window.__gameTest` now exposes `hasFourteenLevelCampaign` and `hasNewSandStormScenes` for smoke checks.
 
 ## Controls
 
