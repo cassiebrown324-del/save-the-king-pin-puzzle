@@ -30,3 +30,14 @@ This scheduled pass adds a more visible late-campaign ramp inspired by Royal Mat
 ## Controls
 
 Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue objective. Match-4 creates rockets, match-5 creates rainbow clears, and Royal Tools give one-use help when a level is close to failure. Watch the warning banner: every few moves the current hazard surges and changes the board or re-locks part of the rescue path. Charge the Crown Cannon by completing rescue goals, then fire it to break locks, goals, and blockers.
+
+## July 12 Nightmare Briefing clarity pass
+
+Inspired by King's Nightmare examples where the rescue setup is immediately obvious, this pass adds a visible **🎥 NIGHTMARE BRIEFING** strip above the board for every level. Each level now calls out:
+
+- the specific danger fantasy and difficulty band,
+- the exact rescue recipe / goal tiles needed,
+- the lock type that opens the trap,
+- the level-specific hazard surge to plan around.
+
+This keeps the 16-level campaign intact while making each rescue feel more like an ad-style mini-scenario before the player starts matching.
