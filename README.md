@@ -7,6 +7,17 @@ Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare res
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
+## July 18 Mirror Maze + Volcano Mine + streak milestone upgrade
+
+This scheduled pass makes the late campaign feel more substantial and adds a clearer skill-reward loop.
+
+- Expanded the campaign from **22 to 24 rescue levels**.
+- Added **Mirror Maze**, a reflection-trap rescue where 🛡️ Shield and 🔑 Key goals break mirror locks while blockers duplicate around the king.
+- Added **Volcano Mine**, a lava-rail rescue where 💧 Water and 🔨 Hammer goals cool rails before mine carts dump the king into magma.
+- Upgraded **🔥 Royal Streak** from a passive score/charge bonus into a visible milestone mechanic: every 3rd clean clear now opens a lock or grabs extra goal progress.
+- Added `hasTwentyFourLevelCampaign`, `hasMirrorVolcanoScenes`, and `hasStreakMilestone` smoke-test flags.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+
 ## July 17 villain cut-in + 22-level campaign upgrade
 
 This pass focuses on making the prototype feel substantially more like the Royal Match / King’s Nightmare ad fantasy: the king is visibly in trouble, a villain or hazard pushes back, and the player has a clear counterplay loop.
