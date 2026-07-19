@@ -7,6 +7,17 @@ Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare res
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
+## July 19 distinct board-layout upgrade
+
+This scheduled pass focuses on making levels feel less like relabeled versions of the same board.
+
+- Added **distinct board layouts** with unplayable holes/gaps that vary by rescue scene: center pits, flooded corners, diagonal cave-ins, split bridges, snake tunnels, cracked crosses, tower corners, honeycomb gaps, rail mazes, library aisles, and harbor piers.
+- The **Nightmare Briefing** now calls out the current level’s board shape alongside the hazard surge so the objective and constraint are immediately readable.
+- Match detection, swaps, Royal Tools, hazard surges, and blockers now respect board holes, making later boards meaningfully different to navigate.
+- Added `hasDistinctBoardLayouts`, `shape`, and `holes` smoke-test fields to `window.__gameTest`.
+- Kept the 24-level campaign, Mirror Maze, Volcano Mine, Royal Streak milestones, Villain Cut-In, Crown Cannon, Royal Tools, hazard surges, pin panels, map progression, and stars.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+
 ## July 18 Mirror Maze + Volcano Mine + streak milestone upgrade
 
 This scheduled pass makes the late campaign feel more substantial and adds a clearer skill-reward loop.
