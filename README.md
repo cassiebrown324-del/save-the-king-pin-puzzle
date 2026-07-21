@@ -7,6 +7,18 @@ Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare res
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
+## July 21 Kitchen Fire smoke-emergency upgrade
+
+This pass makes **Level 3: Kitchen Fire** play like a distinct timed rescue instead of a relabeled board.
+
+- Added four visible stove burners beneath the king, each extinguished by a successful 💧 Water match.
+- Added a live **smoke meter**: smoke rises with each move, water clears it, and 100% smoke loses the rescue.
+- Added a level-specific **grease flare** every four moves that can reignite a burner and sharply raise smoke.
+- Replaced the generic Key tool with a one-use 🧯 **Extinguisher** in this scene; Splash and Crown Cannon also vent smoke.
+- Added a Kitchen Emergency briefing, Fire Captain guidance, bespoke warning banner, and smoke-test state hooks.
+- Inspired by the King's Nightmare kitchen-fire rescue staging: the immediate visual fire threat now directly drives the objective and fail condition.
+
+
 ## July 20 repair + 26-level board-layout push
 
 This scheduled pass fixes the current `index.html` regression and makes levels feel more meaningfully different.
