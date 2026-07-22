@@ -7,40 +7,66 @@ Playable match-3 rescue prototype inspired by Royal Match / King's Nightmare res
 - GitHub Pages: https://cassiebrown324-del.github.io/save-the-king-pin-puzzle/
 - Cache-busted/raw build links are provided after each commit.
 
-## July 21 Kitchen Fire smoke-emergency upgrade
+## July 22 Crystal Elevator + Ogre Dam layout push
 
-This pass makes **Level 3: Kitchen Fire** play like a distinct timed rescue instead of a relabeled board.
+This scheduled pass adds two visibly distinct late-game rescues and extends the board-layout system so the campaign continues to ramp instead of feeling like relabeled boards.
 
-- Added four visible stove burners beneath the king, each extinguished by a successful 💧 Water match.
-- Added a live **smoke meter**: smoke rises with each move, water clears it, and 100% smoke loses the rescue.
-- Added a level-specific **grease flare** every four moves that can reignite a burner and sharply raise smoke.
-- Replaced the generic Key tool with a one-use 🧯 **Extinguisher** in this scene; Splash and Crown Cannon also vent smoke.
-- Added a Kitchen Emergency briefing, Fire Captain guidance, bespoke warning banner, and smoke-test state hooks.
-- Inspired by the King's Nightmare kitchen-fire rescue staging: the immediate visual fire threat now directly drives the objective and fail condition.
-
-
-## July 20 repair + 26-level board-layout push
-
-This scheduled pass fixes the current `index.html` regression and makes levels feel more meaningfully different.
-
-- Repaired `index.html` by replacing the corrupted entrypoint with the complete playable game.
-- Synced `index.html` and `save-the-king-match3.html` to identical content.
 - Expanded the campaign from **24 to 26 rescue levels**.
-- Added **Crystal Elevator**, a shattering lift rescue with 🔑 Key and 🛡️ Shield goals.
-- Added **Ogre Dam**, a flood-dam rescue with 🪢 Rope and 🔨 Hammer goals.
-- Added true **distinct board layouts** with unplayable holes/gaps that vary by rescue scene: center pits, flooded corners, diagonal cave-ins, split bridges, snake tunnels, cracked crosses, tower corners, honeycomb gaps, rail mazes, library aisles, harbor piers, crystal elevator shafts, and dam spillways.
-- The **Nightmare Briefing** now calls out the current board shape so the level constraint is readable before playing.
-- Match detection, swaps, Royal Tools, hazard surges, and blockers now respect board holes.
-- Added smoke-test fields: `hasTwentySixLevelCampaign`, `hasCrystalOgreScenes`, `hasDistinctBoardLayouts`, `shape`, and `holes`.
+- Added **Crystal Elevator**, an ice/crystal shaft rescue where players raise lift locks with Keys and Shields before shards block the elevator.
+- Added **Ogre Dam**, a flood-dam rescue where players repair cracking gate wheels with Hammers and Ropes while the ogre smashes spillways.
+- Added two new board shapes: **elevator shaft** and **dam spillways**, with larger unplayable gaps that change pathing and match opportunities.
+- Added smoke-test flags `hasTwentySixLevelCampaign` and `hasCrystalOgreScenes`.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
 
-## Previous July 19 distinct board-layout upgrade
+Reference direction: Royal Match / King's Nightmare ads with vertical fall traps, flooded dams, obvious lock mechanisms, and strong king-in-danger staging.
 
-This scheduled pass focused on making levels feel less like relabeled versions of the same board.
+## July 19 distinct board-layout upgrade
 
-- Added **distinct board layouts** with unplayable holes/gaps that vary by rescue scene.
-- The **Nightmare Briefing** calls out the current level’s board shape alongside the hazard surge.
+This scheduled pass focuses on making levels feel less like relabeled versions of the same board.
+
+- Added **distinct board layouts** with unplayable holes/gaps that vary by rescue scene: center pits, flooded corners, diagonal cave-ins, split bridges, snake tunnels, cracked crosses, tower corners, honeycomb gaps, rail mazes, library aisles, and harbor piers.
+- The **Nightmare Briefing** now calls out the current level’s board shape alongside the hazard surge so the objective and constraint are immediately readable.
+- Match detection, swaps, Royal Tools, hazard surges, and blockers now respect board holes, making later boards meaningfully different to navigate.
+- Added `hasDistinctBoardLayouts`, `shape`, and `holes` smoke-test fields to `window.__gameTest`.
 - Kept the 24-level campaign, Mirror Maze, Volcano Mine, Royal Streak milestones, Villain Cut-In, Crown Cannon, Royal Tools, hazard surges, pin panels, map progression, and stars.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+
+## July 18 Mirror Maze + Volcano Mine + streak milestone upgrade
+
+This scheduled pass makes the late campaign feel more substantial and adds a clearer skill-reward loop.
+
+- Expanded the campaign from **22 to 24 rescue levels**.
+- Added **Mirror Maze**, a reflection-trap rescue where 🛡️ Shield and 🔑 Key goals break mirror locks while blockers duplicate around the king.
+- Added **Volcano Mine**, a lava-rail rescue where 💧 Water and 🔨 Hammer goals cool rails before mine carts dump the king into magma.
+- Upgraded **🔥 Royal Streak** from a passive score/charge bonus into a visible milestone mechanic: every 3rd clean clear now opens a lock or grabs extra goal progress.
+- Added `hasTwentyFourLevelCampaign`, `hasMirrorVolcanoScenes`, and `hasStreakMilestone` smoke-test flags.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+
+## July 17 villain cut-in + 22-level campaign upgrade
+
+This pass focuses on making the prototype feel substantially more like the Royal Match / King’s Nightmare ad fantasy: the king is visibly in trouble, a villain or hazard pushes back, and the player has a clear counterplay loop.
+
+- Expanded the campaign from **20 to 22 rescue levels**.
+- Added **Acid Laboratory**, a poison-vat scene where players neutralize acid valves with 💧 Water and 🛡️ Shield goals before acid spreads.
+- Added **Meteor Observatory**, a collapsing star-dome scene where players cool meteor shields with 💧 Water and 🔑 Keys before meteors crack the roof.
+- Added a visible **😈 Villain Cut-In** strip that names the scene boss/hazard, tracks pressure, and explains how surges fight back.
+- Crown Cannon now knocks villain pressure back when fired, making it feel more like a rescue counterattack instead of only a progress button.
+- Kept Nightmare Briefing, Rescue Director, Royal Streak, Crown Cannon, Royal Tools, rockets/rainbows, hazard surges, pin panels, map progression, and stars.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+
+## July 16 boss-scene campaign push
+
+This scheduled pass keeps the game as a standalone static HTML build and makes the late campaign feel bigger and less repetitive.
+
+- Expanded the campaign from **18 to 20 rescue levels**.
+- Added **Golem Forge**, a molten-chain forge rescue where 💧 Water and 🔨 Hammer goals cool/break chains while the golem hurls anvils.
+- Added **Pirate Cannon Deck**, a cannonball deck rescue where 🪢 Rope and 🛡️ Shield goals cut fuses and protect the king from sinking-deck hazards.
+- Kept the full rescue structure: Nightmare Briefing, Rescue Director, Royal Streak, Crown Cannon, Royal Tools, rockets/rainbows, hazard surges, pin panels, map progression, and stars.
+- Synced both playable entrypoints: `index.html` and `save-the-king-match3.html`.
+- `window.__gameTest` exposes `hasTwentyLevelCampaign` and `hasForgePirateScenes` for hosted smoke checks.
+
+Reference direction: Royal Match / King's Nightmare-style ads where the king is visibly trapped in escalating, immediately readable peril scenes — lava, floods, fire, monsters, cannonballs, and locked escape mechanisms.
 
 ## Controls
 
-Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue objective. Use Royal Tools when stuck, build Royal Streak milestones with clean clears, and charge the Crown Cannon to blast locks, goals, blockers, and villain pressure. Watch the warning banner: every few moves the current hazard surges and fights back.
+Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue objective. Match-4 creates rockets, match-5 creates rainbow clears, and Royal Tools give one-use help when a level is close to failure. Watch the warning banner: every few moves the current hazard surges and changes the board or re-locks part of the rescue path. Charge the Crown Cannon by making objective and lock progress, then fire it to break through a stuck rescue.
