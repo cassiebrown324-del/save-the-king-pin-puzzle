@@ -20,3 +20,10 @@ This scheduled pass keeps the Royal Match / King’s Nightmare rescue-ad directi
 ## Controls
 
 Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue objective. Every few moves the hazard surges, adding pressure or blockers. Use Royal Tools, streak milestones, and the Crown Cannon to save the king before the trap closes.
+
+## July 25 — Dragon Bridge flame-lane showdown
+
+- Dragon Bridge telegraphs a numbered board row before each breath.
+- Every third successful turn, the dragon scorches that row and may burn a repaired plank.
+- Matching Shield tiles builds guard; 3 guard blocks the next breath.
+- Added deterministic Dragon Bridge smoke-test hooks.
