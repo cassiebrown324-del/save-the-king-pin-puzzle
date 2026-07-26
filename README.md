@@ -27,3 +27,10 @@ Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue
 - Every third successful turn, the dragon scorches that row and may burn a repaired plank.
 - Matching Shield tiles builds guard; 3 guard blocks the next breath.
 - Added deterministic Dragon Bridge smoke-test hooks.
+
+## July 26 — Flooded Cellar rising-water rescue
+
+- Flooded Cellar now has a live waterline that rises after every action and visibly threatens the king.
+- Matching 💧 Water pumps the cellar down; matching 🔑 Keys opens drain valves and drops the water faster.
+- Flood surges can reseal one opened valve, and reaching 100% water immediately loses the rescue.
+- Added animated bubbles, flood percentage, valves-locked counter, pumped-water total, and deterministic flood test hooks.
