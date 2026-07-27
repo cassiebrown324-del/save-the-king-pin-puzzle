@@ -34,3 +34,12 @@ Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue
 - Matching 💧 Water pumps the cellar down; matching 🔑 Keys opens drain valves and drops the water faster.
 - Flood surges can reseal one opened valve, and reaching 100% water immediately loses the rescue.
 - Added animated bubbles, flood percentage, valves-locked counter, pumped-water total, and deterministic flood test hooks.
+
+## July 27 — Frozen Throne blizzard rescue
+
+- Made Level 4 **Frozen Throne** a distinct escalating rescue instead of a relabeled board.
+- Added a visible frost meter that rises after every successful move and freezes the king at 100%.
+- Matching 🔥 Fire tiles and cracking fire-powered ice seals now actively melt the frost.
+- Blizzard surges add a large frost spike, reseal one ice seal, and freeze two board spaces.
+- Added frosted-board telegraphs, blizzard counters, melt totals, loss feedback, and deterministic `window.__gameTest` hooks.
+- Inspired by King's Nightmare's clear ad-style formula: the king is visibly threatened, the move limit matters, and thematic goal tiles directly counter the danger.
