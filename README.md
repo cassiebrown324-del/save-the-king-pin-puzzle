@@ -43,3 +43,15 @@ Tap two adjacent tiles to swap. Match glowing goal tiles to complete each rescue
 - Blizzard surges add a large frost spike, reseal one ice seal, and freeze two board spaces.
 - Added frosted-board telegraphs, blizzard counters, melt totals, loss feedback, and deterministic `window.__gameTest` hooks.
 - Inspired by King's Nightmare's clear ad-style formula: the king is visibly threatened, the move limit matters, and thematic goal tiles directly counter the danger.
+
+## July 30 — Rescue Tips polish
+
+Added a contextual **RESCUE TIP** strip beneath the board. It changes with the level state: first-move guidance, incoming-hazard warnings, final-push advice, and the core goal/lock recipe. This makes the rescue mechanic readable without a separate tutorial and is especially helpful on mobile.
+
+## July 30 — Rescue Tips polish
+
+Added a contextual **RESCUE TIP** strip beneath the board. It changes with the level state: first-move guidance, incoming-hazard warnings, final-push advice, and the core goal/lock recipe. This makes the rescue mechanic readable without a separate tutorial and is especially helpful on mobile.
+
+## July 30 — Contextual Rescue Tips
+
+Added a contextual rescue-tip strip that changes with the level state: first-move guidance, hazard warnings, final-push advice, and the core goal/lock recipe.
